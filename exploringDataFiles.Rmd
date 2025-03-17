@@ -1,0 +1,121 @@
+---
+title: "Exploring Data Files"
+author: "Jason Hunter and Ryan Greer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This document explores the data files in the `results` and `data` folders.
+
+## Loading Required Libraries
+```{r load-libraries}
+library(tidyverse)
+library(readr)
+```
+
+#### Read in rlog_counts_all.rds
+
+```{r rlog_counts_all}
+rlog_counts_all <- readRDS("data/rlog_counts_all.rds")
+head(rlog_counts_all)
+summary(rlog_counts_all)
+```
+
+#### Read in rlog_counts_mouse_dox_long.rds
+```{r rlog_counts_mouse_dox_long}
+rlog_counts_mouse_dox_long <- readRDS("data/rlog_counts_mouse_dox_long.rds")
+head(rlog_counts_mouse_dox_long)
+summary(rlog_counts_mouse_dox_long)
+```
+
+#### Read in count_files.RData
+```{r count_files}
+count_files <- load("data/count_files.RData")
+count_files
+
+## this loaded in the following objects:
+# counts_filtered
+# counts_matrix
+# g2s
+```
+
+#### Checking out the counts_filtered object
+```{r counts_filtered}
+head(counts_filtered)
+summary(counts_filtered)
+```
+
+#### Checking out the counts_matrix object
+```{r counts_matrix}
+head(counts_matrix)
+summary(counts_matrix)
+```
+
+#### Checking out the g2s object
+```{r g2s}
+head(g2s)
+summary(g2s)
+```
+
+#### Reading in dds_time_point_mouse_dox_long.RData
+```{r dds_time_point_mouse_dox_long}
+dds_time_point_mouse_dox_long <- load("data/dds_time_point_mouse_long.RData")
+dds_time_point_mouse_dox_long
+
+## this loaded in the dds_time_point object
+## let's see whats in it
+head(dds_time_point)
+summary(dds_time_point)
+```
+
+#### Reading in deseq_samples.RData
+```{r deseq_samples}
+deseq_samples <- load("data/deseq_samples.RData")
+deseq_samples
+
+head(deseq_samples)
+summary(deseq_samples)
+```
+
+#### Lastly from the data folder, lets read in the time_point_res_df.RData file
+```{r time_point_res_df}
+time_point_res_df <- load("results/time_point_res_df.RData")
+time_point_res_df
+
+## this loaded in the res_df object
+head(res_df)
+summary(res_df)
+```
+
+#### There's also a results folder with some files in it.
+```{r salmon.merged.gene_counts.tsv}
+gene_counts <- read_tsv("results/salmon.merged.gene_counts.tsv")
+head(gene_counts)
+summary(gene_counts)
+```
+
+```{r salmon.merged.gene_tpm.tsv}
+gene_tpm <- read_tsv("results/salmon.merged.gene_counts.tsv")
+head(gene_tpm)
+summary(gene_tpm)
+```
+
+```{r counts_results_DESEQ}
+deseq_results <- load("results/counts_results_DESEQ/DESEQ_results.rdata")
+view(deseq_results)
+```
+
+```{r TPM_results}
+tpm_results <- load("results/TPM_results/TPM_results.rdata")
+view(tpm_results)
+```
+
+
