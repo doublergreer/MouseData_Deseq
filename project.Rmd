@@ -1,0 +1,63 @@
+---
+title: "XXXXX"
+author: "Jason Hunter and Ryan Greer"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Installing Packages(only once)
+```{r}
+# every single install.packages() command we ran on fiji (may not be exhaustive)
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("IRanges")
+install.packages("ggplot2")
+install.packages("purrr")
+install.packages("readr")
+install.packages("tibble")
+install.packages("tidyr")
+install.packages("matrixStats")
+install.packages("broom")
+install.packages("reshape")
+
+
+# Install BiocManager
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(version = "3.20")
+
+BiocManager::install("DESeq2")
+BiocManager::install("apeglm")
+
+```
+
+## Loading Required Libraries
+```{r load-libraries}
+# loading in every library we used over the semester
+library(tidyverse)
+library(readr)
+library(DESeq2)
+library(dplyr)
+library(magrittr)
+library(tidyr)
+library(ggplot2)
+library(IRanges)
+library(purrr)
+library(pheatmap)
+library(textshape)
+library(Rcpp)
+library(tibble)
+library(matrixStats)
+library(broom)
+library(reshape)
+```
+
+## Introduction
+
+This document entails our project. 
