@@ -19,7 +19,13 @@ This document explores the data files in the `results` and `data` folders.
 ```{r load-libraries}
 library(tidyverse)
 library(readr)
+library(DESeq2)
+library(dplyr)
+library(magrittr)
 ```
+
+
+![image](igvimage.png)
 
 #### Read in rlog_counts_all.rds
 
@@ -63,6 +69,8 @@ summary(counts_matrix)
 ```{r g2s}
 head(g2s)
 summary(g2s)
+## save this object as a csv file
+write.csv(g2s, "data/csvs/g2s.csv")
 ```
 
 #### Reading in dds_time_point_mouse_dox_long.RData
@@ -87,7 +95,7 @@ summary(deseq_samples)
 
 #### Lastly from the data folder, lets read in the time_point_res_df.RData file
 ```{r time_point_res_df}
-time_point_res_df <- load("results/time_point_res_df.RData")
+time_point_res_df <- load("data/time_point_res_df.RData")
 time_point_res_df
 
 ## this loaded in the res_df object
@@ -109,13 +117,25 @@ summary(gene_tpm)
 ```
 
 ```{r counts_results_DESEQ}
-deseq_results <- load("results/counts_results_DESEQ/DESEQ_results.rdata")
+deseq_results <- load("results/DESEQ_results.rdata")
 view(deseq_results)
 ```
 
 ```{r TPM_results}
-tpm_results <- load("results/TPM_results/TPM_results.rdata")
+tpm_results <- load("results/TPM_results.rdata")
 view(tpm_results)
+```
+
+```{r sig_4fold_genes_counts}
+# If you want to cross-reference those gene IDs with the DE results:
+sig_4fold  <- read.table("results/sig_4fold_genes_counts.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+gene_names <- read_csv("data/csvs/g2s.csv")
+
+sig_4fold_annot <- sig_4fold %>%
+  left_join(gene_names, by = "gene_symbol")  # or by gene_id, if that column matches
+
+# # Inspect
+# head(sig_4fold_annot)
 ```
 
 

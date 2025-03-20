@@ -1,18 +1,17 @@
 ---
 title: "XXXXX"
 author: "Jason Hunter and Ryan Greer"
-date: "`r Sys.Date()`"
+date: "2025-03-19"
 output: 
   html_document:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ## Installing Packages(only once)
-```{r install-packages, eval=FALSE}
+
+``` r
 # every single install.packages() command we ran on fiji (may not be exhaustive)
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 install.packages("tidyverse")
@@ -36,11 +35,11 @@ BiocManager::install(version = "3.20")
 
 BiocManager::install("DESeq2")
 BiocManager::install("apeglm")
-
 ```
 
 ## Loading Required Libraries
-```{r load-libraries, eval=TRUE, message=FALSE, warning=FALSE}
+
+``` r
 # loading in every library we used over the semester
 library(tidyverse)
 library(readr)
@@ -65,27 +64,42 @@ library(reshape)
 This document entails our project.
 
 ## Importing counts and TPM values
-```{r import data on most signicantly changed genes}
+
+``` r
 # loading in the genes that significantly chagned
 data <- read.table("results/sig_4fold_genes_counts.tsv", header = TRUE, sep = "\t")
-load("results/DESEQ_results.rdata")   # Assumes this provides something like 'dds' or a DESeq2 results object
-load("results/TPM_results.rdata")     # Optional, if you have TPM-based objects
-
-gene_names <- read.csv("results/gene_names.csv", header = TRUE, stringsAsFactors = FALSE)
-counts     <- read.table("results/salmon.merged.gene_counts.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-tpms       <- read.table("results/salmon.merged.gene_tpm.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-sig_4fold  <- read.table("results/sig_4fold_genes_counts.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 ```
 
 ## After loading in the data, we can see that the genes that significantly changed are:
-```{r}
+
+``` r
 print(data$gene_name)
+```
+
+```
+##  [1] "Gm16429"       "Gm13694"       "Gm45234"       "Gm45216"      
+##  [5] "Gm48419"       "Aoc3"          "Abcc2"         "Lhx5"         
+##  [9] "Nlrp3"         "Khdc1c"        "Krt13"         "Gm9923"       
+## [13] "Apol8"         "Pgk1-rs7"      "Ppp1r3c"       "Rps12-ps9"    
+## [17] "Gm13339"       "Gm14046"       "Gm13657"       "Cphx3"        
+## [21] "Gm16429"       "Gm13694"       "Mir6236"       "Gm45216"      
+## [25] "Gm49388"       "Gm8723"        "Gm48419"       "H19"          
+## [29] "Kng1"          "Spink1"        "Khdc1c"        "Klf17"        
+## [33] "Ankrd34a"      "Spn"           "Gm9923"        "Pgk1-rs7"     
+## [37] "Gm13192"       "Rps12-ps9"     "Gm2897"        "Gm4852"       
+## [41] "Gm7206"        "Gm14046"       "Gm4750"        "1700028K03Rik"
+## [45] "Cphx3"         "Obox4-ps18"    "Gm16429"       "Gm13694"      
+## [49] "Rpl31-ps15"    "Gm28439"       "Gm28438"       "Gm7558"       
+## [53] "D030062O11Rik" "4930512J16Rik" "Gm4045"        "Gm45216"      
+## [57] "Gm19810"       "Gm8723"        "Gm48419"       "Cyp1a1"       
+## [61] "Gm16429"       "Gm13694"       "Gm49388"       "Gm48419"
 ```
 
 ## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
 
 ![Rps12-ps9](figures/Rps12-ps9.png)
-```{r}
+
+``` r
 df <- read.table("results/sig_4fold_genes_counts.tsv",
                  header = TRUE,
                  sep = "\t",
@@ -98,50 +112,21 @@ rps12_data <- df[df$gene_name == "Rps12-ps9", ]
 rps12_data
 ```
 
-
-```{r}
-annotated_de <- filtered_res_df %>%
-  left_join(g2s, by = "gene_id")
-
-  head(annotated_de)
 ```
-
-```{r}
-#############################################
-# 2) Volcano Plot
-#############################################
-# For a quick volcano plot from 'filtered_res_df' (or 'annotated_de').
-# We'll just use ggplot2. (EnhancedVolcano is nice, but let's do it manually.)
-
-# Adjust thresholds to your preference:
-padj_cutoff <- 0.05
-log2fc_cutoff <- 1
-
-# Add simple factor columns for coloring:
-annotated_de <- annotated_de %>%
-  mutate(
-    sig_flag = case_when(
-      padj < padj_cutoff & log2FoldChange >  log2fc_cutoff ~ "Up",
-      padj < padj_cutoff & log2FoldChange < -log2fc_cutoff ~ "Down",
-      TRUE ~ "NotSig"
-    )
-  )
-
-ggplot(annotated_de, aes(x = log2FoldChange, y = -log10(padj), color = sig_flag)) +
-  geom_point(alpha = 0.7) +
-  scale_color_manual(values = c("Up" = "red", "Down" = "blue", "NotSig" = "grey60")) +
-  geom_vline(xintercept = c(-log2fc_cutoff, log2fc_cutoff), linetype = "dashed") +
-  geom_hline(yintercept = -log10(padj_cutoff), linetype = "dashed") +
-  labs(
-    title = "Volcano Plot",
-    x = "Log2 Fold Change",
-    y = "-Log10(Adjusted p-value)"
-  ) +
-  theme_minimal()
+##                        gene_name WT_0_1 WT_0_2 WT_0_3 WT_12_1 WT_12_2 WT_12_3
+## ENSMUSG00000069862.6   Rps12-ps9  1.386   3.56  8.131   6.424  11.054  12.292
+## ENSMUSG00000069862.6.1 Rps12-ps9  1.386   3.56  8.131   6.424  11.054  12.292
+##                        WT_24_1 WT_24_2 WT_24_3 WT_48_1 WT_48_2 WT_48_3 WT_96_1
+## ENSMUSG00000069862.6    14.614  23.266   7.787  24.525  17.151   9.021   4.598
+## ENSMUSG00000069862.6.1  14.614  23.266   7.787  24.525  17.151   9.021   4.598
+##                        WT_96_2 WT_96_3
+## ENSMUSG00000069862.6     8.126   11.41
+## ENSMUSG00000069862.6.1   8.126   11.41
 ```
 
 
-```{r}
+
+``` r
 # now we reshape data for time course analysis
 rps12_long <- reshape2::melt(rps12_data,
                              id.vars = c("gene_name"),
@@ -153,7 +138,27 @@ rps12_long <- rps12_long[!duplicated(rps12_long), ]
 rps12_long
 ```
 
-```{r}
+```
+##    gene_name  sample  count
+## 1  Rps12-ps9  WT_0_1  1.386
+## 3  Rps12-ps9  WT_0_2  3.560
+## 5  Rps12-ps9  WT_0_3  8.131
+## 7  Rps12-ps9 WT_12_1  6.424
+## 9  Rps12-ps9 WT_12_2 11.054
+## 11 Rps12-ps9 WT_12_3 12.292
+## 13 Rps12-ps9 WT_24_1 14.614
+## 15 Rps12-ps9 WT_24_2 23.266
+## 17 Rps12-ps9 WT_24_3  7.787
+## 19 Rps12-ps9 WT_48_1 24.525
+## 21 Rps12-ps9 WT_48_2 17.151
+## 23 Rps12-ps9 WT_48_3  9.021
+## 25 Rps12-ps9 WT_96_1  4.598
+## 27 Rps12-ps9 WT_96_2  8.126
+## 29 Rps12-ps9 WT_96_3 11.410
+```
+
+
+``` r
 ## Now we can extract the time point and replicate number from the sample column
 rps12_long$timepoint <- gsub("WT_([0-9]+)_[0-9]+", "\\1", rps12_long$sample)
 rps12_long$replicate <- gsub("WT_[0-9]+_([0-9]+)", "\\1", rps12_long$sample)
@@ -162,7 +167,8 @@ rps12_long$timepoint <- factor(rps12_long$timepoint, levels = c("0", "12", "24",
 
 
 ## Calculating the mean and standard error for each time point
-```{r}
+
+``` r
 rps12_summary <- rps12_long %>%
   group_by(timepoint) %>%
   summarise(
@@ -174,7 +180,8 @@ View(rps12_summary)
 ```
 
 ## Plotting the mean and standard error for each time point
-```{r}
+
+``` r
 expression <- ggplot(rps12_summary, aes(x = timepoint, y = mean, group = 1)) +
   geom_line() +
   geom_point() +
@@ -192,9 +199,12 @@ expression <- ggplot(rps12_summary, aes(x = timepoint, y = mean, group = 1)) +
 expression
 ```
 
+![](project_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 ## And a statistical analysis of expression changes
 ## We compare each time point to the 0 hour time point
-```{r}
+
+``` r
 timepoints <- c("12", "24", "48", "96")
 stat_results <- data.frame()
 
@@ -215,13 +225,24 @@ for (tp in timepoints) {
 
 
 print(stat_results)
+```
 
+```
+##   comparison    p_value fold_change
+## 1    0 vs 12 0.10652547    2.276516
+## 2    0 vs 24 0.12114828    3.492162
+## 3    0 vs 48 0.09049991    3.876807
+## 4    0 vs 96 0.25791074    1.845530
+```
+
+``` r
 # we could also compare it the other ribosomal pseudogenes
 ribosomal_pseudogenes <- df[grepl("Rps.*-ps", df$gene_name), ]
 ```
 
 ## Heatmap Visualization
-```{r}
+
+``` r
 if (nrow(rps12_data) > 0) {
   sample_cols <- grep("WT_", colnames(rps12_data))
   heatmap_data <- as.matrix(rps12_data[, sample_cols])
@@ -232,3 +253,5 @@ if (nrow(rps12_data) > 0) {
            cluster_rows = FALSE)
 }
 ```
+
+![](project_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
