@@ -66,59 +66,41 @@ This document entails our project.
 
 ## Importing counts and TPM values
 ```{r import data on most signicantly changed genes}
+load("results/DESEQ_results.rdata")
+load("results/TPM_results.rdata")
+
 # loading in the genes that significantly chagned
-data <- read.table("results/sig_4fold_genes_counts.tsv", header = TRUE, sep = "\t")
-load("results/DESEQ_results.rdata")   # Assumes this provides something like 'dds' or a DESeq2 results object
-load("results/TPM_results.rdata")     # Optional, if you have TPM-based objects
+data_sig_4fold  <- read.table("results/sig_4fold_genes_counts.tsv",
+                              header = TRUE,
+                              sep = "\t")
 
-gene_names <- read.csv("results/gene_names.csv", header = TRUE, stringsAsFactors = FALSE)
-counts     <- read.table("results/salmon.merged.gene_counts.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-tpms       <- read.table("results/salmon.merged.gene_tpm.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-sig_4fold  <- read.table("results/sig_4fold_genes_counts.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
-```
+gene_names <- read.csv("results/gene_names.csv",
+                       header = TRUE,
+                       stringsAsFactors = FALSE)
 
-## After loading in the data, we can see that the genes that significantly changed are:
-```{r}
-print(data$gene_name)
-```
+counts     <- read.table("results/salmon.merged.gene_counts.tsv",
+                         header = TRUE,
+                         sep = "\t",
+                         stringsAsFactors = FALSE)
 
-## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
-
-![Rps12-ps9](figures/Rps12-ps9.png)
-```{r}
-df <- read.table("results/sig_4fold_genes_counts.tsv",
-                 header = TRUE,
-                 sep = "\t",
-                 stringsAsFactors = FALSE)
-
-# subset rows for gene_name == "Rps12-ps9"
-rps12_data <- df[df$gene_name == "Rps12-ps9", ]
-
-# inspect the resulting subset
-rps12_data
-```
-
-
-```{r}
-annotated_de <- filtered_res_df %>%
-  left_join(g2s, by = "gene_id")
-
-  head(annotated_de)
+tpms       <- read.table("results/salmon.merged.gene_tpm.tsv",
+                         header = TRUE,
+                         sep = "\t",
+                         stringsAsFactors = FALSE)
 ```
 
 ```{r}
 #############################################
-# 2) Volcano Plot
+# Volcano Plot
 #############################################
-# For a quick volcano plot from 'filtered_res_df' (or 'annotated_de').
-# We'll just use ggplot2. (EnhancedVolcano is nice, but let's do it manually.)
+# volcano plot from 'filtered_res_df'
 
-# Adjust thresholds to your preference:
+# adjust thresholds to our preference
 padj_cutoff <- 0.05
 log2fc_cutoff <- 1
 
-# Add simple factor columns for coloring:
-annotated_de <- annotated_de %>%
+# add simple factor columns for coloring:
+filtered_res_df <- filtered_res_df %>%
   mutate(
     sig_flag = case_when(
       padj < padj_cutoff & log2FoldChange >  log2fc_cutoff ~ "Up",
@@ -127,7 +109,7 @@ annotated_de <- annotated_de %>%
     )
   )
 
-ggplot(annotated_de, aes(x = log2FoldChange, y = -log10(padj), color = sig_flag)) +
+ggplot(filtered_res_df, aes(x = log2FoldChange, y = -log10(padj), color = sig_flag)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = c("Up" = "red", "Down" = "blue", "NotSig" = "grey60")) +
   geom_vline(xintercept = c(-log2fc_cutoff, log2fc_cutoff), linetype = "dashed") +
@@ -141,94 +123,150 @@ ggplot(annotated_de, aes(x = log2FoldChange, y = -log10(padj), color = sig_flag)
 ```
 
 
+## After loading in the data, we can see that the genes that significantly changed are:
 ```{r}
-# now we reshape data for time course analysis
-rps12_long <- reshape2::melt(rps12_data,
-                             id.vars = c("gene_name"),
-                             variable.name = "sample",
-                             value.name = "count")
+print(data_sig_4fold$gene_name)
+```
 
-## looks like there's some duplicates. Let's remove them
-rps12_long <- rps12_long[!duplicated(rps12_long), ]
-rps12_long
+## There's a lot of 'Gm' genes in this list, as well as some predicted genes with some funky names.
+## Let's filter them since they are likely not of interest.
+```{r}
+data <- data_sig_4fold[!grepl("Gm", data_sig_4fold$gene_name), ]
+data_cleaned <- data[!grepl("Rik", data$gene_name), ]
+# lets sort it too (alphabetically), why not
+data_cleaned <- data_cleaned[order(data_cleaned$gene_name, decreasing = FALSE), ]
+# there were also a couple of genes that were duplicates,
+# so we removed them as well
+data_cleaned <- data_cleaned[!duplicated(data_cleaned$gene_name), ]
+print(data_cleaned$gene_name)
+```
+
+## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
+
+![Rps12-ps9](figures/Rps12-ps9.png)
+```{r}
+# subset rows for gene_name == "Rps12-ps9"
+# rps12_data <- data_cleaned[data_cleaned$gene_name == "Rps12-ps9", ]
+# rpl31_data <- data_cleaned[data_cleaned$gene_name == "Rpl31-ps15", ]
+
+# # and heres the other genes too if we want to do more
+# abcc2_data <- data_cleaned[data_cleaned$gene_name == "Abcc2", ]
+# ankrd34a_data <- data_cleaned[data_cleaned$gene_name == "Ankrd34a", ]
+# aoc_data <- data_cleaned[data_cleaned$gene_name == "Aoc3", ]
+
+# we can also make a list of all the genes we filtered as individual dataframes
+# this will make it easier to work with them in my opinion
+gene_data_list <- lapply(data_cleaned$gene_name, function(gene) {
+  data_cleaned[data_cleaned$gene_name == gene, ]
+})
+names(gene_data_list) <- data_cleaned$gene_name
+
+
 ```
 
 ```{r}
-## Now we can extract the time point and replicate number from the sample column
-rps12_long$timepoint <- gsub("WT_([0-9]+)_[0-9]+", "\\1", rps12_long$sample)
-rps12_long$replicate <- gsub("WT_[0-9]+_([0-9]+)", "\\1", rps12_long$sample)
-rps12_long$timepoint <- factor(rps12_long$timepoint, levels = c("0", "12", "24", "48", "96"))
+## now we reshape data for time course analysis by melting each gene dataframe
+gene_long_list <- lapply(gene_data_list, function(df) {
+  reshape2::melt(df,
+                 id.vars = "gene_name",
+                 variable.name = "sample",
+                 value.name = "count")
+})
+```
+
+```{r}
+## now we can extract the time point and replicate number 
+## from the sample column for each gene
+gene_long_list <- lapply(gene_long_list, function(df) {
+  df$timepoint <- gsub("WT_([0-9]+)_[0-9]+", "\\1", df$sample)
+  df$replicate <- gsub("WT_[0-9]+_([0-9]+)", "\\1", df$sample)
+  df$timepoint <- factor(df$timepoint, levels = c("0", "12", "24", "48", "96"))
+  df
+})
 ```
 
 
 ## Calculating the mean and standard error for each time point
 ```{r}
-rps12_summary <- rps12_long %>%
-  group_by(timepoint) %>%
-  summarise(
-            mean = mean(count),
-            se = sd(count) / sqrt(n()),
-            sd = sd(count),
-            .groups = "drop")
-View(rps12_summary)
+## list of dataframes with summary statistics for each gene
+gene_summary_list <- lapply(gene_long_list, function(df) {
+  df %>%
+    group_by(timepoint) %>%
+    summarise(
+      mean = mean(count),
+      se = sd(count) / sqrt(n()),
+      sd = sd(count),
+      .groups = "drop"
+    )
+})
 ```
 
 ## Plotting the mean and standard error for each time point
 ```{r}
-expression <- ggplot(rps12_summary, aes(x = timepoint, y = mean, group = 1)) +
-  geom_line() +
-  geom_point() +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  labs(
-    title = "Rps12-ps9 Expression Across Time",
-    y = "Mean Count",
-    x = "Time (hours)",
-    caption = "Error bars represent standard error of the mean"
-  ) +
-  theme(
-    plot.title = element_text(hjust = 0.5, face = "bold"),
-    axis.title = element_text(face = "bold"),
-  )
-expression
+for (gene in names(gene_summary_list)) {
+  df <- gene_summary_list[[gene]]
+  p <- ggplot(df, aes(x = timepoint, y = mean, group = 1)) +
+    geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+    labs(
+      title = paste(gene, "Expression Across Time"),
+      y = "Mean Count",
+      x = "Time (hours)",
+      caption = "Error bars represent standard error of the mean"
+    ) +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      axis.title = element_text(face = "bold")
+    )
+
+# save the image in the figures folder
+ggsave(filename = paste0("figures/", gene, "TPM_expression.png"), plot = p, width = 6, height = 4)
+}
 ```
 
 ## And a statistical analysis of expression changes
 ## We compare each time point to the 0 hour time point
 ```{r}
 timepoints <- c("12", "24", "48", "96")
-stat_results <- data.frame()
+stat_results_list <- lapply(names(gene_long_list), function(gene) {
+  df <- gene_long_list[[gene]]
+  gene_stats <- data.frame()
+  for (tp in timepoints) {
+    tp_data <- df %>% filter(timepoint %in% c("0", tp))
+    # proceed only if there is data for both timepoints
+    if(nrow(tp_data %>% filter(timepoint == "0")) > 0 && nrow(tp_data %>% filter(timepoint == tp)) > 0) {
+      t_test <- t.test(count ~ timepoint, data = tp_data)
+      fc <- mean(tp_data$count[tp_data$timepoint == tp]) / mean(tp_data$count[tp_data$timepoint == "0"])
+      gene_stats <- rbind(gene_stats,
+                          data.frame(gene = gene,
+                                     comparison = paste0("0 vs ", tp),
+                                     p_value = t_test$p.value,
+                                     fold_change = fc))
+    }
+  }
+  gene_stats
+})
 
-for (tp in timepoints) {
-  # Extract data for current timepoint and baseline
-  tp_data <- rps12_long %>% filter(timepoint %in% c("0", tp))
-
-  # Perform t-test
-  t_test <- t.test(count ~ timepoint, data = tp_data)
-
-  # Add results to dataframe
-  stat_results <- rbind(stat_results,
-                        data.frame(comparison = paste0("0 vs ", tp),
-                                   p_value = t_test$p.value,
-                                   fold_change = mean(tp_data$count[tp_data$timepoint == tp]) / # nolint
-                                                 mean(tp_data$count[tp_data$timepoint == "0"]))) # nolint
-}
-
-
-print(stat_results)
-
-# we could also compare it the other ribosomal pseudogenes
-ribosomal_pseudogenes <- df[grepl("Rps.*-ps", df$gene_name), ]
+# combining all results into one data frame:
+stat_results_all <- do.call(rbind, stat_results_list)
+print(stat_results_all)
 ```
 
 ## Heatmap Visualization
 ```{r}
-if (nrow(rps12_data) > 0) {
-  sample_cols <- grep("WT_", colnames(rps12_data))
-  heatmap_data <- as.matrix(rps12_data[, sample_cols])
-  rownames(heatmap_data) <- rps12_data$gene_name
+# use your cleaned data frame which has one entry per gene
+sample_cols <- grep("WT_", colnames(data_cleaned))
+heatmap_data <- as.matrix(data_cleaned[, sample_cols])
+rownames(heatmap_data) <- data_cleaned$gene_name
 
-  pheatmap(heatmap_data,
-           main = "Rps12-ps9 Expression Across Samples",
-           cluster_rows = FALSE)
-}
+pheatmap(heatmap_data,
+         main = "Expression Across Samples",
+         cluster_rows = FALSE)
+```
+
+```{r}
+library(readr)
+
+rlog_counts_all <- read_rds("data/rlog_counts_all.rds")
 ```
