@@ -27,7 +27,7 @@ work/*
 *.tbl
 *.feather
 *.log
-*.png
+*.html
 *.err
 *.out
 *cache*
@@ -50,3 +50,4 @@ work/*
 lessons/04_RNAseq_Dox/01_Mouse_dox_wt/dox_long/job_output/
 lessons/
 .DS_Store
+*.png
