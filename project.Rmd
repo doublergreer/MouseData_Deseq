@@ -238,6 +238,8 @@ facet_plot <- ggplot(all_summary, aes(x = timepoint, y = mean, group = gene)) +
 ggsave(filename = "figures/all_genes_facet_expression.png", plot = facet_plot, width = 12, height = 8)
 ```
 
+View("figures/all_genes_facet_expression.png")
+
 ![all_genes_facet_expression](figures/all_genes_facet_expression.png)
 
 ## And a statistical analysis of expression changes
@@ -277,12 +279,18 @@ rownames(heatmap_data) <- data_cleaned$gene_name
 
 heatmap_data_log <- log2(heatmap_data + 1)
 
+sample_annotation <- data.frame(
+  timepoint = gsub("WT_([0-9]+)_[0-9]+", "\\1", colnames(data_cleaned)[sample_cols]),
+  replicate = gsub("WT_[0-9]+_([0-9]+)", "\\1", colnames(data_cleaned)[sample_cols])
+)
+
+
 rownames(sample_annotation) <- colnames(heatmap_data_log)
 
 sig_heat_map <- pheatmap(
   heatmap_data_log,
   cluster_rows = FALSE,
-  cluster_cols = TRUE,
+  cluster_cols = FALSE,
   scale = "row",
   fontsize = 10,
   fontsize_row = 8,
@@ -292,7 +300,7 @@ sig_heat_map <- pheatmap(
   main = "Expression Across Samples (log2 scale)"
 )
 
-ggsave(filename = "figures/heatmap.png", plot = sig_heat_map, width = 8, height = 10)
+ggsave(filename = "figures/heatmap_unclustered.png", plot = sig_heat_map, width = 8, height = 10)
 ```
 
 ![heatmap](figures/heatmap.png)
