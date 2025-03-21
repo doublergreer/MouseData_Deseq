@@ -1,5 +1,5 @@
 ---
-title: "XXXXX"
+title: "RNA-Seq Analysis"
 author: "Jason Hunter and Ryan Greer"
 date: "`r Sys.Date()`"
 output: 
@@ -217,6 +217,8 @@ ggsave(filename = paste0("figures/", gene, "_expression.png"), plot = p, width =
 # combine all gene summaries with an added gene column
 all_summary <- dplyr::bind_rows(gene_summary_list, .id = "gene")
 
+# theres some plots with a lot of standard deviation
+
 # this facet plot will show all the genes in a single .png file
 facet_plot <- ggplot(all_summary, aes(x = timepoint, y = mean, group = gene)) +
   geom_line() +
@@ -279,12 +281,11 @@ rownames(heatmap_data) <- data_cleaned$gene_name
 
 heatmap_data_log <- log2(heatmap_data + 1)
 
+# sample annotation
 sample_annotation <- data.frame(
   timepoint = gsub("WT_([0-9]+)_[0-9]+", "\\1", colnames(data_cleaned)[sample_cols]),
   replicate = gsub("WT_[0-9]+_([0-9]+)", "\\1", colnames(data_cleaned)[sample_cols])
 )
-
-
 rownames(sample_annotation) <- colnames(heatmap_data_log)
 
 sig_heat_map <- pheatmap(
@@ -300,7 +301,5 @@ sig_heat_map <- pheatmap(
   main = "Expression Across Samples (log2 scale)"
 )
 
-ggsave(filename = "figures/heatmap_unclustered.png", plot = sig_heat_map, width = 8, height = 10)
+ggsave(filename = "figures/_heatmap_unclustered.png", plot = sig_heat_map, width = 8, height = 10)
 ```
-
-![heatmap](figures/heatmap.png)

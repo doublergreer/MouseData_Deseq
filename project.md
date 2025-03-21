@@ -1,7 +1,7 @@
 ---
-title: "XXXXX"
+title: "RNA-Seq Analysis"
 author: "Jason Hunter and Ryan Greer"
-date: "2025-03-20"
+date: "2025-03-21"
 output: 
   html_document:
     keep_md: yes
@@ -13,7 +13,7 @@ output:
 
 ``` r
 # every single install.packages() command we ran on fiji (may not be exhaustive)
-options(repos = c(CRAN = "https://cloud.r-project.org"))
+options(repos = c(CRAN = "https://cloud.r-project.org")) ## may need to be commented out
 install.packages("tidyverse")
 install.packages("dplyr")
 install.packages("IRanges")
@@ -63,7 +63,7 @@ library(reshape)
 
 This document entails our project.
 
-## Importing counts and TPM values
+## Importing Counts and TPM Values as well as the Significantly Changed Genes
 
 ``` r
 load("results/DESEQ_results.rdata")
@@ -112,7 +112,7 @@ filtered_res_df <- filtered_res_df %>%
 
 ggplot(filtered_res_df, aes(x = log2FoldChange, y = -log10(padj), color = sig_flag)) +
   geom_point(alpha = 0.7) +
-  scale_color_manual(values = c("Up" = "red", "Down" = "blue", "NotSig" = "grey60")) +
+  scale_color_manual(values = c("Up" = "blue", "Down" = "red", "NotSig" = "grey60")) +
   geom_vline(xintercept = c(-log2fc_cutoff, log2fc_cutoff), linetype = "dashed") +
   geom_hline(yintercept = -log10(padj_cutoff), linetype = "dashed") +
   labs(
@@ -175,18 +175,9 @@ print(data_cleaned$gene_name)
 
 ## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
 
-![Rps12-ps9](figures/Rps12-ps9.png)
+![Rps12-ps9](figures/Rps12-ps9_IGV.png)
 
 ``` r
-# subset rows for gene_name == "Rps12-ps9"
-# rps12_data <- data_cleaned[data_cleaned$gene_name == "Rps12-ps9", ]
-# rpl31_data <- data_cleaned[data_cleaned$gene_name == "Rpl31-ps15", ]
-
-# # and heres the other genes too if we want to do more
-# abcc2_data <- data_cleaned[data_cleaned$gene_name == "Abcc2", ]
-# ankrd34a_data <- data_cleaned[data_cleaned$gene_name == "Ankrd34a", ]
-# aoc_data <- data_cleaned[data_cleaned$gene_name == "Aoc3", ]
-
 # we can also make a list of all the genes we filtered as individual dataframes
 # this will make it easier to work with them in my opinion
 gene_data_list <- lapply(data_cleaned$gene_name, function(gene) {
@@ -199,16 +190,15 @@ names(gene_data_list) <- data_cleaned$gene_name
 ``` r
 ## now we reshape data for time course analysis by melting each gene dataframe
 gene_long_list <- lapply(gene_data_list, function(df) {
-  reshape2::melt(df,
-                 id.vars = "gene_name",
-                 variable.name = "sample",
-                 value.name = "count")
+  df %>% pivot_longer(cols = -gene_name,
+                      names_to = "sample",
+                      values_to = "count")
 })
 ```
 
 
 ``` r
-## now we can extract the time point and replicate number 
+## now we can extract the time point and replicate number
 ## from the sample column for each gene
 gene_long_list <- lapply(gene_long_list, function(df) {
   df$timepoint <- gsub("WT_([0-9]+)_[0-9]+", "\\1", df$sample)
@@ -256,9 +246,36 @@ for (gene in names(gene_summary_list)) {
     )
 
 # save the image in the figures folder
-ggsave(filename = paste0("figures/", gene, "TPM_expression.png"), plot = p, width = 6, height = 4)
+ggsave(filename = paste0("figures/", gene, "_expression.png"), plot = p, width = 6, height = 4)
 }
+
+# combine all gene summaries with an added gene column
+all_summary <- dplyr::bind_rows(gene_summary_list, .id = "gene")
+
+# theres some plots with a lot of standard deviation
+
+# this facet plot will show all the genes in a single .png file
+facet_plot <- ggplot(all_summary, aes(x = timepoint, y = mean, group = gene)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  facet_wrap(~ gene, scales = "free_y") +
+  labs(
+    title = "Expression Across Time",
+    y = "Mean Count",
+    x = "Time (hours)",
+    caption = "Error bars represent standard error of the mean"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.title = element_text(face = "bold")
+  )
+
+# save the facet plot to a file
+ggsave(filename = "figures/all_genes_facet_expression.png", plot = facet_plot, width = 12, height = 8)
 ```
+
+![all_genes_facet_expression](figures/all_genes_facet_expression.png)
 
 ## And a statistical analysis of expression changes
 ## We compare each time point to the 0 hour time point
@@ -380,21 +397,36 @@ print(stat_results_all)
 ## Heatmap Visualization
 
 ``` r
-# use your cleaned data frame which has one entry per gene
+# use our cleaned data frame which has one entry per gene
 sample_cols <- grep("WT_", colnames(data_cleaned))
 heatmap_data <- as.matrix(data_cleaned[, sample_cols])
 rownames(heatmap_data) <- data_cleaned$gene_name
 
-pheatmap(heatmap_data,
-         main = "Expression Across Samples",
-         cluster_rows = FALSE)
+heatmap_data_log <- log2(heatmap_data + 1)
+
+# sample annotation
+sample_annotation <- data.frame(
+  timepoint = gsub("WT_([0-9]+)_[0-9]+", "\\1", colnames(data_cleaned)[sample_cols]),
+  replicate = gsub("WT_[0-9]+_([0-9]+)", "\\1", colnames(data_cleaned)[sample_cols])
+)
+rownames(sample_annotation) <- colnames(heatmap_data_log)
+
+sig_heat_map <- pheatmap(
+  heatmap_data_log,
+  cluster_rows = FALSE,
+  cluster_cols = TRUE,
+  scale = "row",
+  fontsize = 10,
+  fontsize_row = 8,
+  fontsize_col = 8,
+  angle_col = 45,
+  border_color = NA,
+  main = "Expression Across Samples (log2 scale)"
+)
 ```
 
 ![](project_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
-
 ``` r
-library(readr)
-
-rlog_counts_all <- read_rds("data/rlog_counts_all.rds")
+ggsave(filename = "figures/heatmap.png", plot = sig_heat_map, width = 8, height = 10)
 ```
