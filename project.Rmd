@@ -327,10 +327,42 @@ network <- graph_from_adjacency_matrix(gene_cor,
                                       mode = "undirected", 
                                       weighted = TRUE)
 
-# plot network
-plot(network, 
-     vertex.size = 10,
-     vertex.label.cex = 0.8,
-     edge.width = E(network)$weight * 2,
-     layout = layout_with_fr(network))
+# plot network with different colors for positive and negative correlations
+E(network)$color <- ifelse(E(network)$weight > 0, "blue", "red")
+E(network)$width <- abs(E(network)$weight) * 2
+
+# detect communities (modules) in the graph (which are groups of highly interconnected nodes)
+# cluster using absolute edge weights to allow negative edges in network (because we care about negative correlations)
+set.seed(123) # for reproducibility
+communities <- cluster_walktrap(network, weights = abs(E(network)$weight)) # use cluster_walktrap for weighted networks
+
+
+# assign module colors based on membership (membership is defined by the community detection algorithm)
+module_membership <- membership(communities) 
+num_modules <- length(unique(module_membership)) 
+module_colors <- rainbow(num_modules)[module_membership]
+
+V(network)$color <- module_colors
+
+# nodes with higher degree (more connections) will have larger labels
+V(network)$label.cex <- scales::rescale(degree(network), to = c(0.6, 1.4))
+
+# edge styling still uses real (signed) weights for color and width
+E(network)$color <- ifelse(E(network)$weight > 0, "blue", "red")
+E(network)$width <- abs(E(network)$weight) * 2
+
+layout_modular <- igraph::layout_nicely(network)
+# plot
+plot(network,
+     layout = layout_modular,
+     vertex.size = 12,
+     vertex.label.cex = V(network)$label.cex,
+     vertex.label.color = "black",
+     edge.width = E(network)$width,
+     edge.color = E(network)$color,
+     main = "Gene Co-Expression Network with Positive & Negative Correlations + Module Coloring")
+
+# optional legend
+legend("topright", legend = paste("Module", 1:num_modules),
+       col = rainbow(num_modules), pch = 19, pt.cex = 1.2, bty = "n")
   ```
