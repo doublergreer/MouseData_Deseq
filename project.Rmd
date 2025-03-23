@@ -27,6 +27,8 @@ install.packages("matrixStats")
 install.packages("broom")
 install.packages("reshape")
 install.packages("reshape2")
+install.packages("igraph")
+install.packages("corrplot")
 
 
 # Install BiocManager
@@ -58,6 +60,8 @@ library(tibble)
 library(matrixStats)
 library(broom)
 library(reshape)
+library(igraph)
+library(corrplot)
 ```
 
 ## Introduction
@@ -211,7 +215,7 @@ for (gene in names(gene_summary_list)) {
     )
 
 # save the image in the figures folder
-ggsave(filename = paste0("figures/", gene, "_expression.png"), plot = p, width = 6, height = 4)
+# ggsave(filename = paste0("figures/", gene, "_expression.png"), plot = p, width = 6, height = 4)
 }
 
 # combine all gene summaries with an added gene column
@@ -303,3 +307,30 @@ sig_heat_map <- pheatmap(
 
 ggsave(filename = "figures/_heatmap_unclustered.png", plot = sig_heat_map, width = 8, height = 10)
 ```
+
+```{r}
+
+# calculate correlation matrix
+gene_cor <- cor(t(heatmap_data_log), method = "pearson")
+
+# visualize correlation matrix
+corrplot(gene_cor, method = "circle", type = "upper", order = "hclust",
+         tl.col = "black", tl.cex = 0.7)
+
+# create network from correlations (only strong correlations)
+threshold <- 0.7
+gene_cor[abs(gene_cor) < threshold] <- 0
+diag(gene_cor) <- 0
+
+# convert to igraph object
+network <- graph_from_adjacency_matrix(gene_cor, 
+                                      mode = "undirected", 
+                                      weighted = TRUE)
+
+# plot network
+plot(network, 
+     vertex.size = 10,
+     vertex.label.cex = 0.8,
+     edge.width = E(network)$weight * 2,
+     layout = layout_with_fr(network))
+  ```
