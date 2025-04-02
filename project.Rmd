@@ -388,7 +388,7 @@ print(aoc3_results)
 
 We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours
 
-```{r AOC3}
+```{r KLF17}
 klf17_results <- stat_results_all %>% filter(gene == "Klf17")
 
 print(klf17_results)

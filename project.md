@@ -247,10 +247,12 @@ gene_summary_list <- lapply(gene_long_list, function(df) {
 ``` r
 for (gene in names(gene_summary_list)) {
   df <- gene_summary_list[[gene]]
+  df$timepoint <- as.numeric(as.character(df$timepoint)) 
   p <- ggplot(df, aes(x = timepoint, y = mean, group = 1)) +
     geom_line() +
     geom_point() +
     geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+    scale_x_continuous(breaks = unique(df$timepoint)) +
     labs(
       title = paste(gene, "Expression Across Time"),
       y = "Mean Count",
@@ -271,10 +273,12 @@ all_summary <- dplyr::bind_rows(gene_summary_list, .id = "gene")
 # theres some plots with a lot of standard deviation
 
 # this facet plot will show all the genes in a single .png file
-facet_plot <- ggplot(all_summary, aes(x = timepoint, y = mean, group = gene)) +
+all_summary$timepoint <- as.numeric(as.character(all_summary$timepoint)) 
+facet_plot <- ggplot(all_summary, aes(x = as.numeric(timepoint), y = mean, group = gene)) +
   geom_line() +
   geom_point() +
   geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  scale_x_continuous(breaks = unique(all_summary$timepoint)) +
   facet_wrap(~ gene, scales = "free_y") +
   labs(
     title = "Expression Across Time",
@@ -503,7 +507,12 @@ legend("topright", legend = paste("Module", 1:max(V(network)$module)),
 
 ## AOC3 Downregulation:
 ![aoc3_expression_graph](figures/Aoc3_expression.png)
-We identified significant downregulation of a lesser-known gene that contributes to inflamation, through the production of the oxidative VAP-1 protein.
+We identified significant downregulation of a lesser-known gene that contributes to inflammation, through the production of the oxidative VAP-1(vascular adhesion protein). This protein is thought to contribute to the progression of vascular disorders and kidney complications. Additionally, its levels have been shown to be correlated with all-cause mortality rates in type 2 diabetics. 
+
+We observed a ~6.25-fold reduction of AOC3 expression from the 0 to 96 hours timepoints. Whether this trend continues further from doxycycline exposure or is a more short-term change in expression remains to be seen.
+
+Li HY, Jiang YD, Chang TJ, Wei JN, Lin MS, Lin CH, Chiang FT, Shih SR, Hung CS, Hua CH, Smith DJ, Vanio J, Chuang LM. Serum vascular adhesion protein-1 predicts 10-year cardiovascular and cancer mortality in individuals with type 2 diabetes. Diabetes. 2011 Mar;60(3):993-9. doi: 10.2337/db10-0607. Epub 2011 Jan 31. PMID: 21282368; PMCID: PMC3046860.
+
 
 ``` r
 aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
@@ -517,6 +526,26 @@ print(aoc3_results)
 ## 2 Aoc3    0 vs 24 0.03435160   0.1764706
 ## 3 Aoc3    0 vs 48 0.03420070   0.2205882
 ## 4 Aoc3    0 vs 96 0.04206386   0.1617647
+```
+
+## KLF17 Downregulation
+![Klf17_expression_graph](figures/Klf17_expression.png)
+
+We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours
+
+
+``` r
+klf17_results <- stat_results_all %>% filter(gene == "Klf17")
+
+print(klf17_results)
+```
+
+```
+##    gene comparison    p_value fold_change
+## 1 Klf17    0 vs 12 0.08963494   0.6400000
+## 2 Klf17    0 vs 24 0.01450699   0.2400000
+## 3 Klf17    0 vs 48 0.01764390   0.1733333
+## 4 Klf17    0 vs 96 0.03240713   0.4133333
 ```
 
 #make heatmap of all associated inflammatory proteins 

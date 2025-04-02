@@ -1,0 +1,168 @@
+---
+title: "RNA-Seq Data Processing Methods"
+author: "Jason Hunter and Ryan Greer"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE) # shows code, but won't run it
+```
+
+# Introduction
+
+This document outlines the steps taken to process the RNA-Sequencing data used in the main analysis report (`project.md`). It covers the experimental setup, pipeline execution, quantification, data preparation, and initial analysis steps performed using DESeq2.
+
+## 1. Experimental Design and Data Source
+
+- **Organism & Cell Type**: Mouse Embryonic Stem Cells (mESCs).
+- **Experiment**: Time course analysis following exposure to Doxycycline (Dox).
+- **Time Points**: 0, 12, 24, 48, and 96 hours post-Dox exposure.
+- **Replicates**: 3 biological replicates per time point.
+- **Sequencing**: RNA-Sequencing (assumed short-read based on Salmon/STAR usage). Data is unstranded.
+- **Reference Genome**: Mouse GRCm38.p6 (`GENOMES/M25/GRCm38.p6.genome.fa`).
+- **Processing Pipeline**: `nf-core/rnaseq` pipeline.
+
+## 2. nf-core/rnaseq Pipeline Output
+
+The `nf-core/rnaseq` pipeline was executed, generating standard output directories. Key directories used for downstream analysis include:
+
+- `fastqc/`: Raw read quality control reports.
+- `multiqc/`: Aggregated quality control report across all samples and pipeline steps.
+- `pipeline_info/`: Logs detailing software versions and execution parameters for reproducibility.
+- `trim_galore/`: Information on adapter trimming.
+- `star_salmon/`: Alignment (STAR) and quantification (Salmon) results, including gene counts and Transcripts Per Million (TPM).
+- `salmon/`: Direct Salmon quantification results (alternative quantification).
+
+## 3. Quantification and Initial Count Matrix Preparation
+
+```{r load-raw-counts}
+# define path to the pipeline output file
+counts_file <- "/pipeline_output/star_salmon/salmon.merged.gene_counts.tsv"
+
+# load the raw counts matrix (genes as rows, samples as columns)
+# row names are Ensembl Gene IDs, first column contains gene symbols
+counts_matrix_raw <- read.table(counts_file, header = TRUE, row.names = 1, sep = "\t")
+
+# create a mapping file (g2s) between Ensembl IDs (rownames) and Gene Symbols (first column)
+g2s <- data.frame(
+  gene_id = rownames(counts_matrix_raw),
+  gene_name = counts_matrix_raw[, 1]
+)
+
+# remove the gene_name column to keep only counts
+counts_matrix <- counts_matrix_raw[, -1]
+
+# DESeq2 requires integer counts
+counts_matrix_rounded <- round(counts_matrix)
+
+# filter out genes with very low counts across all samples (e.g., sum of counts <= 1)
+counts_filtered <- counts_matrix_rounded[rowSums(counts_matrix_rounded) > 1, ]
+```
+
+## 4. Sample Metadata Preparation
+
+```{r prepare-coldata}
+# assuming 'counts_matrix' or 'counts_filtered' has correct column names
+sample_ids <- colnames(counts_filtered)
+
+# create the basic sample table
+deseq_samples <- data.frame(sample_id = sample_ids)
+
+# parse time point and replicate information from sample IDs (e.g., "WT_0_R1")
+split_values <- strsplit(deseq_samples$sample_id, "_")
+time_values <- sapply(split_values, function(x) x[[2]])
+replicate_values <- sapply(split_values, function(x) x[[3]])
+
+deseq_samples$time_point <- time_values
+deseq_samples$replicate <- replicate_values
+
+# convert experimental factors to factors for DESeq2 modeling
+deseq_samples$time_point <- factor(deseq_samples$time_point, levels = c("0", "12", "24", "48", "96"))
+deseq_samples$replicate <- factor(deseq_samples$replicate)
+
+# row names of colData must match column names of countData
+rownames(deseq_samples) <- deseq_samples$sample_id
+```
+
+## 5. DESeq2 Analysis: Differential Expression Over Time
+
+### 5.1. Creating the DESeqDataSet Object and Running DESeq
+
+```{r run-deseq}
+library(DESeq2)
+
+# create DESeqDataSet object
+dds <- DESeqDataSetFromMatrix(countData = counts_filtered,
+                              colData = deseq_samples,
+                              design = ~ time_point)
+
+# run the DESeq2 analysis
+dds <- DESeq(dds)
+```
+
+### 5.2. Extracting Pairwise Comparisons
+
+```{r extract-results}
+# get the names of the coefficients to extract
+result_names <- resultsNames(dds)
+results_names_to_extract <- result_names[grepl("time_point_", result_names)]
+
+# initialize an empty data frame to store all results
+res_df_all_timepoints <- data.frame()
+
+# loop through each comparison name
+for (results_name in results_names_to_extract) {
+  res <- results(dds, name = results_name)
+  tmp_res_df <- res %>%
+    as.data.frame() %>%
+    rownames_to_column("gene_id") %>%
+    merge(g2s, by = "gene_id", all.x = TRUE) %>%
+    mutate(comparison = results_name)
+  res_df_all_timepoints <- bind_rows(res_df_all_timepoints, tmp_res_df)
+}
+```
+
+### 5.3. Normalization for Visualization (rlog)
+
+```{r rlog-transform}
+# apply rlog transformation
+rlog_counts <- rlog(dds, blind = TRUE)
+rlog_counts_matrix <- assay(rlog_counts)
+```
+
+## 6. Filtering and Identifying Genes of Interest
+
+### 6.1. Initial Filtering (p < 0.05, |log2FC| > 1)
+
+```{r filter-significant}
+filtered_res_df <- res_df_all_timepoints %>%
+  filter(!is.na(padj) & padj < 0.05)
+
+filtered_res_df_logfc1 <- filtered_res_df %>%
+  filter(abs(log2FoldChange) > 1)
+```
+
+### 6.2. Stricter Filtering for Focused Analysis (p < 0.01, |log2FC| > 2)
+
+```{r filter-4fold}
+sig_4fold_genes_df <- res_df_all_timepoints %>%
+  filter(!is.na(padj) & padj < 0.01, abs(log2FoldChange) > 2)
+
+sig_counts <- counts_matrix_raw[sig_4fold_genes_df$gene_id, ]
+```
+
+## 7. TPM Data Processing
+
+```{r tpm-processing}
+tpm_file <- "pipeline_output/star_salmon/salmon.merged.gene_tpm.tsv"
+TPM_raw <- read.table(tpm_file, header = TRUE, row.names = 1, sep = "\t")
+
+g2s_tpm <- data.frame(gene_id = rownames(TPM_raw), gene_name = TPM_raw[, 1])
+TPM <- TPM_raw[, -1]
+
+TPM_filtered <- TPM[rowSums(TPM) > 1, ]
+```
