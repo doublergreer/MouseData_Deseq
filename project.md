@@ -1,7 +1,7 @@
 ---
 title: "RNA-Seq Analysis"
 author: "Jason Hunter and Ryan Greer"
-date: "2025-03-31"
+date: "2025-04-02"
 output: 
   html_document:
     keep_md: yes
@@ -28,7 +28,6 @@ install.packages("reshape")
 install.packages("reshape2")
 install.packages("igraph")
 install.packages("corrplot")
-install.packages("bnlearn")
 
 # Install BiocManager
 if (!require("BiocManager", quietly = TRUE))
@@ -61,7 +60,6 @@ library(broom)
 library(reshape)
 library(igraph)
 library(corrplot)
-library(bnlearn)
 ```
 
 ## Introduction
@@ -263,6 +261,9 @@ for (gene in names(gene_summary_list)) {
       plot.title = element_text(hjust = 0.5, face = "bold"),
       axis.title = element_text(face = "bold")
     )
+
+# save the image in the figures folder
+ggsave(filename = paste0("figures/", gene, "_expression.png"), plot = p, width = 6, height = 4)
 }
 
 # combine all gene summaries with an added gene column
@@ -500,6 +501,25 @@ legend("topright", legend = paste("Module", 1:max(V(network)$module)),
 
 ![](project_files/figure-html/network-analysis-1.png)<!-- -->
 
+## AOC3 Downregulation:
+![aoc3_expression_graph](figures/Aoc3_expression.png)
+We identified significant downregulation of a lesser-known gene that contributes to inflamation, through the production of the oxidative VAP-1 protein.
+
+``` r
+aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
+
+print(aoc3_results)
+```
+
+```
+##   gene comparison    p_value fold_change
+## 1 Aoc3    0 vs 12 0.10947002   0.5147059
+## 2 Aoc3    0 vs 24 0.03435160   0.1764706
+## 3 Aoc3    0 vs 48 0.03420070   0.2205882
+## 4 Aoc3    0 vs 96 0.04206386   0.1617647
+```
+
+#make heatmap of all associated inflammatory proteins 
 
 ## Chatgpt SUGGESTS THE FOLLOWING:
 ## Biological Interpretation of Modules

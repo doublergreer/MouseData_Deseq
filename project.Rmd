@@ -226,6 +226,9 @@ for (gene in names(gene_summary_list)) {
       plot.title = element_text(hjust = 0.5, face = "bold"),
       axis.title = element_text(face = "bold")
     )
+
+# save the image in the figures folder
+ggsave(filename = paste0("figures/", gene, "_expression.png"), plot = p, width = 6, height = 4)
 }
 
 # combine all gene summaries with an added gene column
