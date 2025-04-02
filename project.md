@@ -548,25 +548,10 @@ print(klf17_results)
 ## 4 Klf17    0 vs 96 0.03240713   0.4133333
 ```
 
-#make heatmap of all associated inflammatory proteins 
-
-## Chatgpt SUGGESTS THE FOLLOWING:
 ## Biological Interpretation of Modules
 
 ### Module 1: Inflammatory/Stress Response
 Genes: *Aoc3, Abcc2, Nlrp3, Kng1, Klf17, Spn*
-- GO: Immune/inflammatory response, leukocyte migration.
-- Hub genes: **Spn**, **Klf17**.
-
-### Module 2: Differentiation/Metabolic Adaptation
-Genes: *Krt13, Spink1, Lhx5, Ppp1r3c, Apol8, Ankrd34a*
-- GO: Epithelial differentiation, glycogen/lipid metabolism.
-- Hub genes: **Apol8**, **Krt13**.
-
-## Suggested Next Steps
-- Functional validation of hub genes (**Klf17**, **Nlrp3**, **Apol8**) via knockout/knockdown experiments.
-- Metabolic assays (e.g., Seahorse, lipid droplet assays).
-- Isoform-specific analysis to identify transcript-specific regulation.
 
 ## Conclusions
 Our analyses reveal distinct biological modules triggered by doxycycline exposure:
