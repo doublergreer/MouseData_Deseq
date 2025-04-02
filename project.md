@@ -5,13 +5,11 @@ date: "2025-04-02"
 output: 
   html_document:
     keep_md: yes
-    toc: true
-    toc_float: true
 ---
 
 
 
-## Installing Packages
+## Installing Packages(only once)
 
 ``` r
 # every single install.packages() command we ran on fiji (may not be exhaustive)
@@ -26,6 +24,8 @@ install.packages("tibble")
 install.packages("tidyr")
 install.packages("matrixStats")
 install.packages("broom")
+install.packages("reshape")
+install.packages("reshape2")
 install.packages("igraph")
 install.packages("corrplot")
 
@@ -43,26 +43,28 @@ BiocManager::install("apeglm")
 ``` r
 # loading in every library we used over the semester
 library(tidyverse)
+library(readr)
 library(DESeq2)
+library(dplyr)
 library(magrittr)
+library(tidyr)
+library(ggplot2)
 library(IRanges)
+library(purrr)
 library(pheatmap)
 library(textshape)
 library(Rcpp)
+library(tibble)
 library(matrixStats)
 library(broom)
+library(reshape)
 library(igraph)
 library(corrplot)
 ```
 
 ## Introduction
 
-This analysis explores RNA-Seq data from mouse embryonic stem cells (mESCs) after doxycycline exposure over a time course (0, 12, 24, 48, 96 hours). 
-The goals were to identify significantly differentially expressed genes, perform co-expression network analyses, and uncover biological modules relevant to mitochondrial function, inflammation, differentiation, and metabolic shifts.
-
-## Data Acquisition
-**Detailed methods for data processing and initial analysis can be found [here](dataAquisition.html).**
-
+This analysis explores RNA-Seq data from mouse embryonic stem cells (mESCs) after doxycycline exposure over a time course (0, 12, 24, 48, 96 hours). The goals were to identify significantly differentially expressed genes, perform co-expression network analyses, and uncover biological modules relevant to mitochondrial function, inflammation, differentiation, and metabolic shifts.
 
 ## Importing Counts and TPM Values as well as the Significantly Changed Genes
 
@@ -93,6 +95,9 @@ tpms       <- read.table("results/salmon.merged.gene_tpm.tsv",
 ## First we created a volcano plot to get a good visual representation of how the genes are distributed.
 
 ``` r
+#############################################
+# Volcano Plot of Differential Expression Results
+#############################################
 # volcano plot from 'filtered_res_df',
 # which is a data frame we created
 # from the results/DESEQ_results.rdata
@@ -140,8 +145,10 @@ ggplot(sig_flag_filtered_res_df,
 
 ![](project_files/figure-html/volcano-plot-1.png)<!-- -->
 
-There's a ton of activity amongst genes in the volcano plot, both upregulated and downregulated.
-Lets take a look at just the dataframe of genes that are P < 0.01 & that change greater that 4 fold (up or down). 
+
+## There's a ton of activity amongst genes in the volcano plot, both upregulated and downregulated.
+## Lets take a look at just the dataframe of genes that are P < 0.01 & that change greater that 4 fold (up or down)
+## We calculated this in 06_Differential_expression_analyses/04_exploring_results.Rmd
 ## We can see that the genes that significantly changed are:
 
 ``` r
@@ -166,8 +173,9 @@ print(data_sig_4fold$gene_name)
 ## [57] "Gm19810"       "Gm8723"        "Gm48419"       "Cyp1a1"       
 ## [61] "Gm16429"       "Gm13694"       "Gm49388"       "Gm48419"
 ```
-There's a lot of 'Gm' genes in this list, as well as some predicted genes with some funky names. 
-## Let's filter the genes we aren't interested in:
+
+## There's a lot of 'Gm' genes in this list, as well as some predicted genes with some funky names.
+## Let's filter them since they are likely not of interest.
 
 ``` r
 data <- data_sig_4fold[!grepl("Gm", data_sig_4fold$gene_name), ]
@@ -294,7 +302,8 @@ View("figures/all_genes_facet_expression.png")
 
 ![all_genes_facet_expression](figures/all_genes_facet_expression.png)
 
-## And a statistical analysis of expression changes. We compare each time point to the 0 hour time point
+## And a statistical analysis of expression changes
+## We compare each time point to the 0 hour time point
 
 ``` r
 # perform t-tests for each gene at each time point
