@@ -29,7 +29,6 @@ install.packages("reshape")
 install.packages("reshape2")
 install.packages("igraph")
 install.packages("corrplot")
-install.packages("bnlearn")
 
 # Install BiocManager
 if (!require("BiocManager", quietly = TRUE))
@@ -61,7 +60,6 @@ library(broom)
 library(reshape)
 library(igraph)
 library(corrplot)
-library(bnlearn)
 ```
 
 ## Introduction
@@ -364,6 +362,16 @@ legend("topright", legend = paste("Module", 1:max(V(network)$module)),
        col = rainbow(max(V(network)$module)), pch = 19, bty = "n")
 ```
 
+## AOC3 Downregulation:
+![aoc3_expression_graph](figures/Aoc3_expression.png)
+We identified significant downregulation of a lesser-known gene that contributes to inflamation, through the production of the oxidative VAP-1 protein.
+```{r AOC3}
+aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
+
+print(aoc3_results)
+```
+
+#make heatmap of all associated inflammatory proteins 
 
 ## Chatgpt SUGGESTS THE FOLLOWING:
 ## Biological Interpretation of Modules
