@@ -1,7 +1,7 @@
 ---
 title: "RNA-Seq Analysis"
 author: "Jason Hunter and Ryan Greer"
-date: "2025-03-21"
+date: "2025-04-02"
 output: 
   html_document:
     keep_md: yes
@@ -26,7 +26,8 @@ install.packages("matrixStats")
 install.packages("broom")
 install.packages("reshape")
 install.packages("reshape2")
-
+install.packages("igraph")
+install.packages("corrplot")
 
 # Install BiocManager
 if (!require("BiocManager", quietly = TRUE))
@@ -57,11 +58,13 @@ library(tibble)
 library(matrixStats)
 library(broom)
 library(reshape)
+library(igraph)
+library(corrplot)
 ```
 
 ## Introduction
 
-This document entails our project.
+This analysis explores RNA-Seq data from mouse embryonic stem cells (mESCs) after doxycycline exposure over a time course (0, 12, 24, 48, 96 hours). The goals were to identify significantly differentially expressed genes, perform co-expression network analyses, and uncover biological modules relevant to mitochondrial function, inflammation, differentiation, and metabolic shifts.
 
 ## Importing Counts and TPM Values as well as the Significantly Changed Genes
 
@@ -69,7 +72,7 @@ This document entails our project.
 load("results/DESEQ_results.rdata")
 load("results/TPM_results.rdata")
 
-# loading in the genes that significantly chagned
+# loading in the genes that significantly changed (from the DESeq2 analysis)
 data_sig_4fold  <- read.table("results/sig_4fold_genes_counts.tsv",
                               header = TRUE,
                               sep = "\t")
@@ -89,32 +92,49 @@ tpms       <- read.table("results/salmon.merged.gene_tpm.tsv",
                          stringsAsFactors = FALSE)
 ```
 
+## First we created a volcano plot to get a good visual representation of how the genes are distributed.
 
 ``` r
 #############################################
-# Volcano Plot
+# Volcano Plot of Differential Expression Results
 #############################################
-# volcano plot from 'filtered_res_df'
+# volcano plot from 'filtered_res_df',
+# which is a data frame we created
+# from the results/DESEQ_results.rdata
 
-# adjust thresholds to our preference
+# adjust thresholds how we see fit
+# the max p-value we want to see
+# and the min log2fc we want to see
 padj_cutoff <- 0.05
 log2fc_cutoff <- 1
 
 # add simple factor columns for coloring:
-filtered_res_df <- filtered_res_df %>%
+# creates a new column by mutate()
+# called 'sig_flag' in filtered_res_df
+# and assigns a value based on the conditions
+# using case_when() to determine whether a gene is:
+# upregulated, downregulated, or not significant
+sig_flag_filtered_res_df <- filtered_res_df %>%
   mutate(
     sig_flag = case_when(
-      padj < padj_cutoff & log2FoldChange >  log2fc_cutoff ~ "Up",
-      padj < padj_cutoff & log2FoldChange < -log2fc_cutoff ~ "Down",
+      (padj < padj_cutoff & log2FoldChange >  log2fc_cutoff) ~ "Up",
+      (padj < padj_cutoff & log2FoldChange < -log2fc_cutoff) ~ "Down",
       TRUE ~ "NotSig"
     )
   )
 
-ggplot(filtered_res_df, aes(x = log2FoldChange, y = -log10(padj), color = sig_flag)) +
+ggplot(sig_flag_filtered_res_df,
+       aes(x = log2FoldChange,
+           y = -log10(padj),
+           color = sig_flag)) +
   geom_point(alpha = 0.7) +
-  scale_color_manual(values = c("Up" = "blue", "Down" = "red", "NotSig" = "grey60")) +
-  geom_vline(xintercept = c(-log2fc_cutoff, log2fc_cutoff), linetype = "dashed") +
-  geom_hline(yintercept = -log10(padj_cutoff), linetype = "dashed") +
+  scale_color_manual(values = c("Up" = "blue",
+                                "Down" = "red",
+                                "NotSig" = "grey60")) +
+  geom_vline(xintercept = c(-log2fc_cutoff, log2fc_cutoff),
+             linetype = "dashed") +
+  geom_hline(yintercept = -log10(padj_cutoff),
+             linetype = "dashed") +
   labs(
     title = "Volcano Plot",
     x = "Log2 Fold Change",
@@ -123,10 +143,13 @@ ggplot(filtered_res_df, aes(x = log2FoldChange, y = -log10(padj), color = sig_fl
   theme_minimal()
 ```
 
-![](project_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+![](project_files/figure-html/volcano-plot-1.png)<!-- -->
 
 
-## After loading in the data, we can see that the genes that significantly changed are:
+## There's a ton of activity amongst genes in the volcano plot, both upregulated and downregulated.
+## Lets take a look at just the dataframe of genes that are P < 0.01 & that change greater that 4 fold (up or down)
+## We calculated this in 06_Differential_expression_analyses/04_exploring_results.Rmd
+## We can see that the genes that significantly changed are:
 
 ``` r
 print(data_sig_4fold$gene_name)
@@ -158,9 +181,10 @@ print(data_sig_4fold$gene_name)
 data <- data_sig_4fold[!grepl("Gm", data_sig_4fold$gene_name), ]
 data_cleaned <- data[!grepl("Rik", data$gene_name), ]
 # lets sort it too (alphabetically), why not
-data_cleaned <- data_cleaned[order(data_cleaned$gene_name, decreasing = FALSE), ]
+data_cleaned <- data_cleaned[order(data_cleaned$gene_name,
+                                   decreasing = FALSE), ]
 # there were also a couple of genes that were duplicates,
-# so we removed them as well
+# so we'll remove them as well
 data_cleaned <- data_cleaned[!duplicated(data_cleaned$gene_name), ]
 print(data_cleaned$gene_name)
 ```
@@ -173,9 +197,8 @@ print(data_cleaned$gene_name)
 ## [21] "Spn"
 ```
 
-## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
-
-![Rps12-ps9](figures/Rps12-ps9_IGV.png)
+<!-- ## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
+![Rps12-ps9](figures/Rps12-ps9_IGV.png) -->
 
 ``` r
 # we can also make a list of all the genes we filtered as individual dataframes
@@ -184,20 +207,14 @@ gene_data_list <- lapply(data_cleaned$gene_name, function(gene) {
   data_cleaned[data_cleaned$gene_name == gene, ]
 })
 names(gene_data_list) <- data_cleaned$gene_name
-```
 
-
-``` r
 ## now we reshape data for time course analysis by melting each gene dataframe
 gene_long_list <- lapply(gene_data_list, function(df) {
   df %>% pivot_longer(cols = -gene_name,
                       names_to = "sample",
                       values_to = "count")
 })
-```
 
-
-``` r
 ## now we can extract the time point and replicate number
 ## from the sample column for each gene
 gene_long_list <- lapply(gene_long_list, function(df) {
@@ -251,7 +268,6 @@ ggsave(filename = paste0("figures/", gene, "_expression.png"), plot = p, width =
 
 # combine all gene summaries with an added gene column
 all_summary <- dplyr::bind_rows(gene_summary_list, .id = "gene")
-
 # theres some plots with a lot of standard deviation
 
 # this facet plot will show all the genes in a single .png file
@@ -272,8 +288,13 @@ facet_plot <- ggplot(all_summary, aes(x = timepoint, y = mean, group = gene)) +
   )
 
 # save the facet plot to a file
-ggsave(filename = "figures/all_genes_facet_expression.png", plot = facet_plot, width = 12, height = 8)
+ggsave(filename = "figures/all_genes_facet_expression.png",
+       plot = facet_plot,
+       width = 12,
+       height = 8)
 ```
+
+View("figures/all_genes_facet_expression.png")
 
 ![all_genes_facet_expression](figures/all_genes_facet_expression.png)
 
@@ -281,16 +302,28 @@ ggsave(filename = "figures/all_genes_facet_expression.png", plot = facet_plot, w
 ## We compare each time point to the 0 hour time point
 
 ``` r
+# perform t-tests for each gene at each time point
 timepoints <- c("12", "24", "48", "96")
+# create a list to store results
 stat_results_list <- lapply(names(gene_long_list), function(gene) {
   df <- gene_long_list[[gene]]
   gene_stats <- data.frame()
+  # loop through each time point
   for (tp in timepoints) {
+    # filter data for the current gene and timepoint
     tp_data <- df %>% filter(timepoint %in% c("0", tp))
     # proceed only if there is data for both timepoints
-    if(nrow(tp_data %>% filter(timepoint == "0")) > 0 && nrow(tp_data %>% filter(timepoint == tp)) > 0) {
+    if (nrow(tp_data %>% filter(timepoint == "0")) > 0 &&
+          nrow(tp_data %>% filter(timepoint == tp)) > 0) {
+      # perform t-test
       t_test <- t.test(count ~ timepoint, data = tp_data)
-      fc <- mean(tp_data$count[tp_data$timepoint == tp]) / mean(tp_data$count[tp_data$timepoint == "0"])
+      # calculate mean for each timepoint
+      mean_tp <- mean(tp_data$count[tp_data$timepoint == tp])
+      # calculate mean for timepoint 0
+      mean_0 <- mean(tp_data$count[tp_data$timepoint == "0"])
+      # calculate fold change
+      fc <- mean_tp / mean_0
+      # store results in a data frame
       gene_stats <- rbind(gene_stats,
                           data.frame(gene = gene,
                                      comparison = paste0("0 vs ", tp),
@@ -397,36 +430,116 @@ print(stat_results_all)
 ## Heatmap Visualization
 
 ``` r
-# use our cleaned data frame which has one entry per gene
-sample_cols <- grep("WT_", colnames(data_cleaned))
-heatmap_data <- as.matrix(data_cleaned[, sample_cols])
-rownames(heatmap_data) <- data_cleaned$gene_name
+# create a heatmap matrix
+heatmap_matrix <- data_cleaned %>%
+  distinct(gene_name, .keep_all = TRUE) %>%
+  select(gene_name, starts_with("WT")) %>%
+  column_to_rownames("gene_name") %>%
+  mutate(across(everything(), as.numeric)) %>%
+  replace(is.na(.), 0) %>%  # replace NAs with zeros
+  as.matrix()
 
-heatmap_data_log <- log2(heatmap_data + 1)
+# check for infinite or NaN values explicitly
+if (any(is.infinite(heatmap_matrix) | is.na(heatmap_matrix))) {
+  heatmap_matrix[!is.finite(heatmap_matrix)] <- 0
+}
 
-# sample annotation
-sample_annotation <- data.frame(
-  timepoint = gsub("WT_([0-9]+)_[0-9]+", "\\1", colnames(data_cleaned)[sample_cols]),
-  replicate = gsub("WT_[0-9]+_([0-9]+)", "\\1", colnames(data_cleaned)[sample_cols])
-)
-rownames(sample_annotation) <- colnames(heatmap_data_log)
+# log2 transformation
+heatmap_matrix_log <- log2(heatmap_matrix + 1)
 
-sig_heat_map <- pheatmap(
-  heatmap_data_log,
-  cluster_rows = FALSE,
-  cluster_cols = TRUE,
-  scale = "row",
-  fontsize = 10,
-  fontsize_row = 8,
-  fontsize_col = 8,
-  angle_col = 45,
-  border_color = NA,
-  main = "Expression Across Samples (log2 scale)"
-)
+# generate heatmap
+pheatmap(heatmap_matrix_log,
+         scale = "row",
+         clustering_distance_rows = "correlation",
+         fontsize_row = 8,
+         main = "Log2 Expression Heatmap")
 ```
 
-![](project_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](project_files/figure-html/heatmap-visualization-1.png)<!-- -->
+
+## Co-expression Network Analysis
 
 ``` r
-ggsave(filename = "figures/heatmap.png", plot = sig_heat_map, width = 8, height = 10)
+# calculate correlation matrix
+cor_matrix <- cor(t(heatmap_matrix), method = "pearson")
+
+# define threshold correlations
+threshold <- 0.7
+network_matrix <- cor_matrix
+network_matrix[abs(network_matrix) < threshold] <- 0
+diag(network_matrix) <- 0
+
+# build network
+network <- graph_from_adjacency_matrix(network_matrix,
+                                       weighted = TRUE,
+                                       mode = "undirected")
+
+# community detection
+communities <- cluster_walktrap(network, weights = abs(E(network)$weight))
+V(network)$module <- communities$membership
+V(network)$color <- rainbow(max(V(network)$module))[V(network)$module]
+
+# plot network
+plot(network,
+     vertex.size = 10,
+     vertex.label.cex = 0.8,
+     vertex.label.color = "black",
+     edge.width = abs(E(network)$weight)*2,
+     edge.color = ifelse(E(network)$weight > 0, "blue", "red"),
+     main = "Gene Co-expression Network")
 ```
+
+```
+## Warning: Non-positive edge weight found, ignoring all weights during graph
+## layout.
+```
+
+``` r
+legend("topright", legend = paste("Module", 1:max(V(network)$module)),
+       col = rainbow(max(V(network)$module)), pch = 19, bty = "n")
+```
+
+![](project_files/figure-html/network-analysis-1.png)<!-- -->
+
+## AOC3 Downregulation:
+![aoc3_expression_graph](figures/Aoc3_expression.png)
+We identified significant downregulation of a lesser-known gene that contributes to inflamation, through the production of the oxidative VAP-1 protein.
+
+``` r
+aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
+
+print(aoc3_results)
+```
+
+```
+##   gene comparison    p_value fold_change
+## 1 Aoc3    0 vs 12 0.10947002   0.5147059
+## 2 Aoc3    0 vs 24 0.03435160   0.1764706
+## 3 Aoc3    0 vs 48 0.03420070   0.2205882
+## 4 Aoc3    0 vs 96 0.04206386   0.1617647
+```
+
+#make heatmap of all associated inflammatory proteins 
+
+## Chatgpt SUGGESTS THE FOLLOWING:
+## Biological Interpretation of Modules
+
+### Module 1: Inflammatory/Stress Response
+Genes: *Aoc3, Abcc2, Nlrp3, Kng1, Klf17, Spn*
+- GO: Immune/inflammatory response, leukocyte migration.
+- Hub genes: **Spn**, **Klf17**.
+
+### Module 2: Differentiation/Metabolic Adaptation
+Genes: *Krt13, Spink1, Lhx5, Ppp1r3c, Apol8, Ankrd34a*
+- GO: Epithelial differentiation, glycogen/lipid metabolism.
+- Hub genes: **Apol8**, **Krt13**.
+
+## Suggested Next Steps
+- Functional validation of hub genes (**Klf17**, **Nlrp3**, **Apol8**) via knockout/knockdown experiments.
+- Metabolic assays (e.g., Seahorse, lipid droplet assays).
+- Isoform-specific analysis to identify transcript-specific regulation.
+
+## Conclusions
+Our analyses reveal distinct biological modules triggered by doxycycline exposure:
+an early inflammatory/stress response (potentially mitochondrial-related via Nlrp3) and a later metabolic/differentiation shift. 
+Novel candidates like **Apol8** and **Klf17** emerge as key regulatory nodes for further experimental investigation.
