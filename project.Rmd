@@ -5,13 +5,15 @@ date: "`r Sys.Date()`"
 output: 
   html_document:
     keep_md: yes
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Installing Packages(only once)
+## Installing Packages
 ```{r install-packages, eval=FALSE}
 # every single install.packages() command we ran on fiji (may not be exhaustive)
 options(repos = c(CRAN = "https://cloud.r-project.org")) ## may need to be commented out
@@ -25,8 +27,6 @@ install.packages("tibble")
 install.packages("tidyr")
 install.packages("matrixStats")
 install.packages("broom")
-install.packages("reshape")
-install.packages("reshape2")
 install.packages("igraph")
 install.packages("corrplot")
 
@@ -43,28 +43,26 @@ BiocManager::install("apeglm")
 ```{r load-libraries, eval=TRUE, message=FALSE, warning=FALSE}
 # loading in every library we used over the semester
 library(tidyverse)
-library(readr)
 library(DESeq2)
-library(dplyr)
 library(magrittr)
-library(tidyr)
-library(ggplot2)
 library(IRanges)
-library(purrr)
 library(pheatmap)
 library(textshape)
 library(Rcpp)
-library(tibble)
 library(matrixStats)
 library(broom)
-library(reshape)
 library(igraph)
 library(corrplot)
 ```
 
 ## Introduction
 
-This analysis explores RNA-Seq data from mouse embryonic stem cells (mESCs) after doxycycline exposure over a time course (0, 12, 24, 48, 96 hours). The goals were to identify significantly differentially expressed genes, perform co-expression network analyses, and uncover biological modules relevant to mitochondrial function, inflammation, differentiation, and metabolic shifts.
+This analysis explores RNA-Seq data from mouse embryonic stem cells (mESCs) after doxycycline exposure over a time course (0, 12, 24, 48, 96 hours). 
+The goals were to identify significantly differentially expressed genes, perform co-expression network analyses, and uncover biological modules relevant to mitochondrial function, inflammation, differentiation, and metabolic shifts.
+
+## Data Acquisition
+**Detailed methods for data processing and initial analysis can be found [here](dataAquisition.html).**
+
 
 ## Importing Counts and TPM Values as well as the Significantly Changed Genes
 ```{r import-data-on-most-signicantly-changed-genes}
@@ -93,9 +91,6 @@ tpms       <- read.table("results/salmon.merged.gene_tpm.tsv",
 
 ## First we created a volcano plot to get a good visual representation of how the genes are distributed.
 ```{r volcano-plot}
-#############################################
-# Volcano Plot of Differential Expression Results
-#############################################
 # volcano plot from 'filtered_res_df',
 # which is a data frame we created
 # from the results/DESEQ_results.rdata
@@ -141,17 +136,14 @@ ggplot(sig_flag_filtered_res_df,
   theme_minimal()
 ```
 
-
-## There's a ton of activity amongst genes in the volcano plot, both upregulated and downregulated.
-## Lets take a look at just the dataframe of genes that are P < 0.01 & that change greater that 4 fold (up or down)
-## We calculated this in 06_Differential_expression_analyses/04_exploring_results.Rmd
+There's a ton of activity amongst genes in the volcano plot, both upregulated and downregulated.
+Lets take a look at just the dataframe of genes that are P < 0.01 & that change greater that 4 fold (up or down). 
 ## We can see that the genes that significantly changed are:
 ```{r print-significant-genes}
 print(data_sig_4fold$gene_name)
 ```
-
-## There's a lot of 'Gm' genes in this list, as well as some predicted genes with some funky names.
-## Let's filter them since they are likely not of interest.
+There's a lot of 'Gm' genes in this list, as well as some predicted genes with some funky names. 
+## Let's filter the genes we aren't interested in:
 ```{r clean-&-sort-gene-data}
 data <- data_sig_4fold[!grepl("Gm", data_sig_4fold$gene_name), ]
 data_cleaned <- data[!grepl("Rik", data$gene_name), ]
@@ -267,8 +259,7 @@ View("figures/all_genes_facet_expression.png")
 
 ![all_genes_facet_expression](figures/all_genes_facet_expression.png)
 
-## And a statistical analysis of expression changes
-## We compare each time point to the 0 hour time point
+## And a statistical analysis of expression changes. We compare each time point to the 0 hour time point
 ```{r comparing-to-the-zero-hour-timepoint}
 # perform t-tests for each gene at each time point
 timepoints <- c("12", "24", "48", "96")
