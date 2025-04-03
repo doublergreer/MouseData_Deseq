@@ -377,6 +377,8 @@ We observed a ~6.25-fold reduction of AOC3 expression from the 0 to 96 hours tim
 
 Li HY, Jiang YD, Chang TJ, Wei JN, Lin MS, Lin CH, Chiang FT, Shih SR, Hung CS, Hua CH, Smith DJ, Vanio J, Chuang LM. Serum vascular adhesion protein-1 predicts 10-year cardiovascular and cancer mortality in individuals with type 2 diabetes. Diabetes. 2011 Mar;60(3):993-9. doi: 10.2337/db10-0607. Epub 2011 Jan 31. PMID: 21282368; PMCID: PMC3046860.
 
+![AOC3_IGV](figures/AOC3_IGV.png)
+
 ```{r AOC3}
 aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
 
@@ -386,13 +388,44 @@ print(aoc3_results)
 ## KLF17 Downregulation
 ![Klf17_expression_graph](figures/Klf17_expression.png)
 
-We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours
+We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours, so we aren't sure if this trend will continue, with expression returning to baseline. 
+
+KLF17 (Krueppel-like factor 17), is a transcription factor that is involved in the processes of stem cell differentiation, so reduced levels may influence the direction that these cells take, though we are not sure in what capacity.
+
+![KLF17_IGV](figures/klf17_IGV.png)
 
 ```{r KLF17}
 klf17_results <- stat_results_all %>% filter(gene == "Klf17")
 
 print(klf17_results)
 ```
+
+## ABCC2 Downregulation
+![ABCC2_expression_graph](figures/Abcc2_expression.png)
+ABCC2 (ATP-binding cassette subfamily C member 2) is a gene associated with drug resistance, and plays a role in optimal functioning of the kidney and liver. It is involved in the transportation of foreign substances, toxins, and drugs inside the body. With this role, the significant, 4-fold reduction we see in ABCC2 expression after exposure to doxycycline may lead to increased inflammation, since ABCC2 is involved in the transportation of the toxic and inflammatory substances out of the system.
+
+![ABCC2_IGV](figures/Abcc2_IGV.png)
+
+```{r Abcc2}
+abcc2_results <- stat_results_all %>% filter(gene == "Abcc2")
+
+print(abcc2_results)
+```
+
+## NLRP3 Downregulation
+![NLRP3_expression_graph](figures/Nlrp3_expression.png)
+NLRP3 (NLR family pyrin domain containing 3) is a protein heavily involved in regulating immune inflammatory response, through its role in the inflammasome, a protein complex involved in the detection of cell damage and stress. Since NLRP3 activates inflammatory signaling, lower levels are likely to contribute to the inflammation-lowering properties that doxycycline is famous for.
+
+We observed a ~4.5-fold reduction in NLRP3 levels from the 0 to 96 hour timepoints, so we believe this gene is one of the key players in doxycycline's effects on stress/inflammatory response.
+
+![NLRP3_IGV](figures/Nlrp3_IGV.png)
+```{r NLRP3}
+nlrp3_results <- stat_results_all %>% filter(gene == "Nlrp3")
+
+print(nlrp3_results)
+```
+
+
 
 ## Biological Interpretation of Modules
 
