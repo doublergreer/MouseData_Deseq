@@ -425,7 +425,33 @@ nlrp3_results <- stat_results_all %>% filter(gene == "Nlrp3")
 print(nlrp3_results)
 ```
 
+## KNG1 Downregulation
+![KNG1_expression_graph](figures/Kng1_expression.png)
+KNG1 (kininogen 1) is a protein that is directly involved in the production of bradykinin, in the kallikrein-kinin system. Bradykinin is often called an inflammatory mediator, for its complex role in inflammatory systems. Through different mechanisms, bradykinin can cause both vasoconstriction and vasoconstriction, acting as a sort of regulator.
+With this, the effect of ~5-fold reduction in KNG1 expressions is unclear, however it is certain that doxycycline is having an impact on this system.
 
+![KNG1_IGV](figures/Kng1_IGV.png)
+
+```{r KNG1}
+kng1_results <- stat_results_all %>% filter(gene == "Kng1")
+
+print(kng1_results)
+```
+
+## SPN Downregulation
+![SPN_expression_graph](figures/Spn_expression.png)
+Spn (Sialophorin) is a protein on the surface of many cells, particularly immune cells, including T cells, monocytes, and granulocytes. It is involved in immune signaling and inflammatory regulation.
+
+A reduction in Spn expresssion may actually be pro-inflammatory because the protein regulates the behavior of immune cells, so lower levels can throw this system out of balance. Additionally, lower Spn levels are correlated with reduced immune response, since mounting a proper response is reliant on signals from Spn.
+
+While we noticed a steep decrease in the expression initially(almost 6-fold reduction within 48 hours), it seemed to recover significantly by the time we recorded the 96 hour timepoint, down to a little over a 2-fold reduction. Again, we are not sure if this trend will continue, or if these expression changes will stick around long beyond the exposure to doxycycline.
+
+![SPN_IGV](figures/Spn_IGV.png)
+```{r Spn}
+spn_results <- stat_results_all %>% filter(gene == "Spn")
+
+print(spn_results)
+```
 
 ## Biological Interpretation of Modules
 
