@@ -455,8 +455,44 @@ print(spn_results)
 
 ## Biological Interpretation of Modules
 
-### Module 1: Inflammatory/Stress Response
+### Inflammatory/Stress Response
 Genes: *Aoc3, Abcc2, Nlrp3, Kng1, Klf17, Spn*
+
+## InflammationHeatmap Visualization
+```{r heatmap-visualization}
+# Define the genes to include
+genes_of_interest <- c("Aoc3", "Abcc2", "Nlrp3", "Kng1", "Klf17", "Spn")
+
+# Filter the dataset for the genes of interest
+infl_heatmap_matrix <- data_cleaned %>%
+  filter(gene_name %in% genes_of_interest) %>%
+  distinct(gene_name, .keep_all = TRUE) %>%
+  select(gene_name, starts_with("WT")) %>%
+  column_to_rownames("gene_name") %>%
+  mutate(across(everything(), as.numeric)) %>%
+  replace(is.na(.), 0) %>%  # Replace NAs with zeros
+  as.matrix()
+
+infl_heatmap_matrix[!is.finite(heatmap_matrix)] <- 0
+
+# Log2 transformation
+infl_heatmap_matrix_log <- log2(infl_heatmap_matrix + 1)
+
+infl_unclustered_heatmap <- pheatmap(
+   infl_heatmap_matrix_log,
+   cluster_rows = FALSE,
+   cluster_cols = FALSE,
+   scale = "row",
+   fontsize = 10,
+   fontsize_row = 8,
+   fontsize_col = 8,
+   angle_col = 45,
+   main = "Log2 Expression Heatmap (Inflammation/Stress Genes)")
+
+ggsave(filename = "figures/Infl_heatmap.png", plot = infl_unclustered_heatmap, width = 8, height = 10)
+
+```
+![INFL_Heatmapo](figures/Infl_heatmap.png)
 
 ## Conclusions
 Our analyses reveal distinct biological modules triggered by doxycycline exposure:
