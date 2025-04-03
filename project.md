@@ -5,15 +5,19 @@ date: "2025-04-03"
 output: 
   html_document:
     keep_md: yes
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: tango
 ---
 
 
 
-## Installing Packages(only once)
+## Installing Packages
 
 ``` r
 # every single install.packages() command we ran on fiji (may not be exhaustive)
-options(repos = c(CRAN = "https://cloud.r-project.org")) ## may need to be commented out
+options(repos = c(CRAN = "https://cloud.r-project.org")) # may need to be commented out if not compliling locally
 install.packages("tidyverse")
 install.packages("dplyr")
 install.packages("IRanges")
@@ -43,24 +47,24 @@ BiocManager::install("apeglm")
 ``` r
 # loading in every library we used over the semester
 library(tidyverse)
-library(readr)
 library(DESeq2)
-library(dplyr)
 library(magrittr)
-library(tidyr)
 library(ggplot2)
 library(IRanges)
-library(purrr)
 library(pheatmap)
 library(textshape)
 library(Rcpp)
-library(tibble)
 library(matrixStats)
 library(broom)
-library(reshape)
 library(igraph)
 library(corrplot)
 ```
+
+## Methods Summary
+
+RNA-Sequencing data was processed using the nf-core/rnaseq pipeline, with quantification performed by Salmon. Initial differential expression analysis was conducted using DESeq2.
+
+**For a comprehensive description of the data processing pipeline, quality control, normalization, and DESeq2 setup, please see the [Methods Appendix](dataAquisition.html).**
 
 ## Introduction
 
@@ -150,29 +154,72 @@ ggplot(sig_flag_filtered_res_df,
 ## Lets take a look at just the dataframe of genes that are P < 0.01 & that change greater that 4 fold (up or down)
 ## We calculated this in 06_Differential_expression_analyses/04_exploring_results.Rmd
 ## We can see that the genes that significantly changed are:
-
-``` r
-print(data_sig_4fold$gene_name)
-```
-
-```
-##  [1] "Gm16429"       "Gm13694"       "Gm45234"       "Gm45216"      
-##  [5] "Gm48419"       "Aoc3"          "Abcc2"         "Lhx5"         
-##  [9] "Nlrp3"         "Khdc1c"        "Krt13"         "Gm9923"       
-## [13] "Apol8"         "Pgk1-rs7"      "Ppp1r3c"       "Rps12-ps9"    
-## [17] "Gm13339"       "Gm14046"       "Gm13657"       "Cphx3"        
-## [21] "Gm16429"       "Gm13694"       "Mir6236"       "Gm45216"      
-## [25] "Gm49388"       "Gm8723"        "Gm48419"       "H19"          
-## [29] "Kng1"          "Spink1"        "Khdc1c"        "Klf17"        
-## [33] "Ankrd34a"      "Spn"           "Gm9923"        "Pgk1-rs7"     
-## [37] "Gm13192"       "Rps12-ps9"     "Gm2897"        "Gm4852"       
-## [41] "Gm7206"        "Gm14046"       "Gm4750"        "1700028K03Rik"
-## [45] "Cphx3"         "Obox4-ps18"    "Gm16429"       "Gm13694"      
-## [49] "Rpl31-ps15"    "Gm28439"       "Gm28438"       "Gm7558"       
-## [53] "D030062O11Rik" "4930512J16Rik" "Gm4045"        "Gm45216"      
-## [57] "Gm19810"       "Gm8723"        "Gm48419"       "Cyp1a1"       
-## [61] "Gm16429"       "Gm13694"       "Gm49388"       "Gm48419"
-```
+<div style="column-count: 3;">
+*  Gm16429
+*  Gm13694
+*  Gm45234
+*  Gm45216
+*  Gm48419
+*  Aoc3
+*  Abcc2
+*  Lhx5
+*  Nlrp3
+*  Khdc1c
+*  Krt13
+*  Gm9923
+*  Apol8
+*  Pgk1-rs7
+*  Ppp1r3c
+*  Rps12-ps9
+*  Gm13339
+*  Gm14046
+*  Gm13657
+*  Cphx3
+*  Gm16429
+*  Gm13694
+*  Mir6236
+*  Gm45216
+*  Gm49388
+*  Gm8723
+*  Gm48419
+*  H19
+*  Kng1
+*  Spink1
+*  Khdc1c
+*  Klf17
+*  Ankrd34a
+*  Spn
+*  Gm9923
+*  Pgk1-rs7
+*  Gm13192
+*  Rps12-ps9
+*  Gm2897
+*  Gm4852
+*  Gm7206
+*  Gm14046
+*  Gm4750
+*  1700028K03Rik
+*  Cphx3
+*  Obox4-ps18
+*  Gm16429
+*  Gm13694
+*  Rpl31-ps15
+*  Gm28439
+*  Gm28438
+*  Gm7558
+*  D030062O11Rik
+*  4930512J16Rik
+*  Gm4045
+*  Gm45216
+*  Gm19810
+*  Gm8723
+*  Gm48419
+*  Cyp1a1
+*  Gm16429
+*  Gm13694
+*  Gm49388
+*  Gm48419
+</div>
 
 ## There's a lot of 'Gm' genes in this list, as well as some predicted genes with some funky names.
 ## Let's filter them since they are likely not of interest.
@@ -186,17 +233,30 @@ data_cleaned <- data_cleaned[order(data_cleaned$gene_name,
 # there were also a couple of genes that were duplicates,
 # so we'll remove them as well
 data_cleaned <- data_cleaned[!duplicated(data_cleaned$gene_name), ]
-print(data_cleaned$gene_name)
 ```
-
-```
-##  [1] "Abcc2"      "Ankrd34a"   "Aoc3"       "Apol8"      "Cphx3"     
-##  [6] "Cyp1a1"     "H19"        "Khdc1c"     "Klf17"      "Kng1"      
-## [11] "Krt13"      "Lhx5"       "Mir6236"    "Nlrp3"      "Obox4-ps18"
-## [16] "Pgk1-rs7"   "Ppp1r3c"    "Rpl31-ps15" "Rps12-ps9"  "Spink1"    
-## [21] "Spn"
-```
-
+<div style="column-count: 3;">
+*  Abcc2
+*  Ankrd34a
+*  Aoc3
+*  Apol8
+*  Cphx3
+*  Cyp1a1
+*  H19
+*  Khdc1c
+*  Klf17
+*  Kng1
+*  Krt13
+*  Lhx5
+*  Mir6236
+*  Nlrp3
+*  Obox4-ps18
+*  Pgk1-rs7
+*  Ppp1r3c
+*  Rpl31-ps15
+*  Rps12-ps9
+*  Spink1
+*  Spn
+</div>
 <!-- ## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
 ![Rps12-ps9](figures/Rps12-ps9_IGV.png) -->
 
@@ -298,9 +358,8 @@ ggsave(filename = "figures/all_genes_facet_expression.png",
        height = 8)
 ```
 
-View("figures/all_genes_facet_expression.png")
-
-![all_genes_facet_expression](figures/all_genes_facet_expression.png)
+## This facet plot shows the expression of all genes across time points
+<img src="figures/all_genes_facet_expression.png" width="3600" />
 
 ## And a statistical analysis of expression changes
 ## We compare each time point to the 0 hour time point

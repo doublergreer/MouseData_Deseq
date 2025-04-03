@@ -12,7 +12,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE) # shows code, but won't run it
 ```
 
-# Introduction
+# Intro
 
 This document outlines the steps taken to process the RNA-Sequencing data used in the main analysis report (`project.md`). It covers the experimental setup, pipeline execution, quantification, data preparation, and initial analysis steps performed using DESeq2.
 

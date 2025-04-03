@@ -27,7 +27,6 @@ work/*
 *.tbl
 *.feather
 *.log
-*.html
 *.err
 *.out
 *cache*

@@ -5,16 +5,20 @@ date: "`r Sys.Date()`"
 output: 
   html_document:
     keep_md: yes
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: tango
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Installing Packages(only once)
+## Installing Packages
 ```{r install-packages, eval=FALSE}
 # every single install.packages() command we ran on fiji (may not be exhaustive)
-options(repos = c(CRAN = "https://cloud.r-project.org")) ## may need to be commented out
+options(repos = c(CRAN = "https://cloud.r-project.org")) # may need to be commented out if not compliling locally
 install.packages("tidyverse")
 install.packages("dplyr")
 install.packages("IRanges")
@@ -43,24 +47,24 @@ BiocManager::install("apeglm")
 ```{r load-libraries, eval=TRUE, message=FALSE, warning=FALSE}
 # loading in every library we used over the semester
 library(tidyverse)
-library(readr)
 library(DESeq2)
-library(dplyr)
 library(magrittr)
-library(tidyr)
 library(ggplot2)
 library(IRanges)
-library(purrr)
 library(pheatmap)
 library(textshape)
 library(Rcpp)
-library(tibble)
 library(matrixStats)
 library(broom)
-library(reshape)
 library(igraph)
 library(corrplot)
 ```
+
+## Methods Summary
+
+RNA-Sequencing data was processed using the nf-core/rnaseq pipeline, with quantification performed by Salmon. Initial differential expression analysis was conducted using DESeq2.
+
+**For a comprehensive description of the data processing pipeline, quality control, normalization, and DESeq2 setup, please see the [Methods Appendix](dataAquisition.html).**
 
 ## Introduction
 
@@ -146,9 +150,12 @@ ggplot(sig_flag_filtered_res_df,
 ## Lets take a look at just the dataframe of genes that are P < 0.01 & that change greater that 4 fold (up or down)
 ## We calculated this in 06_Differential_expression_analyses/04_exploring_results.Rmd
 ## We can see that the genes that significantly changed are:
-```{r print-significant-genes}
-print(data_sig_4fold$gene_name)
+<div style="column-count: 3;">
+```{r print-significant-genes, echo=FALSE, results='asis'}
+markdown_list <- paste("* ", data_sig_4fold$gene_name, collapse = "\n")
+cat(markdown_list)
 ```
+</div>
 
 ## There's a lot of 'Gm' genes in this list, as well as some predicted genes with some funky names.
 ## Let's filter them since they are likely not of interest.
@@ -161,13 +168,16 @@ data_cleaned <- data_cleaned[order(data_cleaned$gene_name,
 # there were also a couple of genes that were duplicates,
 # so we'll remove them as well
 data_cleaned <- data_cleaned[!duplicated(data_cleaned$gene_name), ]
-print(data_cleaned$gene_name)
 ```
-
+<div style="column-count: 3;">
+```{r echo=FALSE, results='asis'}
+markdown_list <- paste("* ", data_cleaned$gene_name, collapse = "\n")
+cat(markdown_list)
+```
+</div>
 <!-- ## From this list, after some manual testing in IGV, we decided to focus on the expression of the following gene:
 ![Rps12-ps9](figures/Rps12-ps9_IGV.png) -->
 ```{r prepare-gene-timecourse-data}
-
 # we can also make a list of all the genes we filtered as individual dataframes
 # this will make it easier to work with them in my opinion
 gene_data_list <- lapply(data_cleaned$gene_name, function(gene) {
@@ -263,9 +273,10 @@ ggsave(filename = "figures/all_genes_facet_expression.png",
        height = 8)
 ```
 
-View("figures/all_genes_facet_expression.png")
-
-![all_genes_facet_expression](figures/all_genes_facet_expression.png)
+## This facet plot shows the expression of all genes across time points
+```{r all_genes_facet_expression, echo=FALSE}
+knitr::include_graphics("figures/all_genes_facet_expression.png")
+```
 
 ## And a statistical analysis of expression changes
 ## We compare each time point to the 0 hour time point
