@@ -1,7 +1,7 @@
 ---
 title: "RNA-Seq Analysis"
 author: "Jason Hunter and Ryan Greer"
-date: "2025-04-02"
+date: "2025-04-03"
 output: 
   html_document:
     keep_md: yes
@@ -513,6 +513,8 @@ We observed a ~6.25-fold reduction of AOC3 expression from the 0 to 96 hours tim
 
 Li HY, Jiang YD, Chang TJ, Wei JN, Lin MS, Lin CH, Chiang FT, Shih SR, Hung CS, Hua CH, Smith DJ, Vanio J, Chuang LM. Serum vascular adhesion protein-1 predicts 10-year cardiovascular and cancer mortality in individuals with type 2 diabetes. Diabetes. 2011 Mar;60(3):993-9. doi: 10.2337/db10-0607. Epub 2011 Jan 31. PMID: 21282368; PMCID: PMC3046860.
 
+![AOC3_IGV](figures/AOC3_IGV.png)
+
 
 ``` r
 aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
@@ -531,7 +533,11 @@ print(aoc3_results)
 ## KLF17 Downregulation
 ![Klf17_expression_graph](figures/Klf17_expression.png)
 
-We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours
+We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours, so we aren't sure if this trend will continue, with expression returning to baseline. 
+
+KLF17 (Krueppel-like factor 17), is a transcription factor that is involved in the processes of stem cell differentiation, so reduced levels may influence the direction that these cells take, though we are not sure in what capacity.
+
+![KLF17_IGV](figures/klf17_IGV.png)
 
 
 ``` r
@@ -548,10 +554,139 @@ print(klf17_results)
 ## 4 Klf17    0 vs 96 0.03240713   0.4133333
 ```
 
+## ABCC2 Downregulation
+![ABCC2_expression_graph](figures/Abcc2_expression.png)
+ABCC2 (ATP-binding cassette subfamily C member 2) is a gene associated with drug resistance, and plays a role in optimal functioning of the kidney and liver. It is involved in the transportation of foreign substances, toxins, and drugs inside the body. With this role, the significant, 4-fold reduction we see in ABCC2 expression after exposure to doxycycline may lead to increased inflammation, since ABCC2 is involved in the transportation of the toxic and inflammatory substances out of the system.
+
+![ABCC2_IGV](figures/Abcc2_IGV.png)
+
+
+``` r
+abcc2_results <- stat_results_all %>% filter(gene == "Abcc2")
+
+print(abcc2_results)
+```
+
+```
+##    gene comparison    p_value fold_change
+## 1 Abcc2    0 vs 12 0.20783297    0.703125
+## 2 Abcc2    0 vs 24 0.03204837    0.125000
+## 3 Abcc2    0 vs 48 0.02771524    0.234375
+## 4 Abcc2    0 vs 96 0.03736314    0.250000
+```
+
+## NLRP3 Downregulation
+![NLRP3_expression_graph](figures/Nlrp3_expression.png)
+NLRP3 (NLR family pyrin domain containing 3) is a protein heavily involved in regulating immune inflammatory response, through its role in the inflammasome, a protein complex involved in the detection of cell damage and stress. Since NLRP3 activates inflammatory signaling, lower levels are likely to contribute to the inflammation-lowering properties that doxycycline is famous for.
+
+We observed a ~4.5-fold reduction in NLRP3 levels from the 0 to 96 hour timepoints, so we believe this gene is one of the key players in doxycycline's effects on stress/inflammatory response.
+
+![NLRP3_IGV](figures/Nlrp3_IGV.png)
+
+``` r
+nlrp3_results <- stat_results_all %>% filter(gene == "Nlrp3")
+
+print(nlrp3_results)
+```
+
+```
+##    gene comparison    p_value fold_change
+## 1 Nlrp3    0 vs 12 0.18873378   0.6732673
+## 2 Nlrp3    0 vs 24 0.01550864   0.1188119
+## 3 Nlrp3    0 vs 48 0.01306275   0.3465347
+## 4 Nlrp3    0 vs 96 0.01043968   0.2178218
+```
+
+## KNG1 Downregulation
+![KNG1_expression_graph](figures/Kng1_expression.png)
+KNG1 (kininogen 1) is a protein that is directly involved in the production of bradykinin, in the kallikrein-kinin system. Bradykinin is often called an inflammatory mediator, for its complex role in inflammatory systems. Through different mechanisms, bradykinin can cause both vasoconstriction and vasoconstriction, acting as a sort of regulator.
+With this, the effect of ~5-fold reduction in KNG1 expressions is unclear, however it is certain that doxycycline is having an impact on this system.
+
+![KNG1_IGV](figures/Kng1_IGV.png)
+
+
+``` r
+kng1_results <- stat_results_all %>% filter(gene == "Kng1")
+
+print(kng1_results)
+```
+
+```
+##   gene comparison     p_value fold_change
+## 1 Kng1    0 vs 12 0.041516389   0.5158025
+## 2 Kng1    0 vs 24 0.029311272   0.3803164
+## 3 Kng1    0 vs 48 0.004320424   0.1198990
+## 4 Kng1    0 vs 96 0.008713440   0.2002428
+```
+
+## SPN Downregulation
+![SPN_expression_graph](figures/Spn_expression.png)
+Spn (Sialophorin) is a protein on the surface of many cells, particularly immune cells, including T cells, monocytes, and granulocytes. It is involved in immune signaling and inflammatory regulation.
+
+A reduction in Spn expresssion may actually be pro-inflammatory because the protein regulates the behavior of immune cells, so lower levels can throw this system out of balance. Additionally, lower Spn levels are correlated with reduced immune response, since mounting a proper response is reliant on signals from Spn.
+
+While we noticed a steep decrease in the expression initially(almost 6-fold reduction within 48 hours), it seemed to recover significantly by the time we recorded the 96 hour timepoint, down to a little over a 2-fold reduction. Again, we are not sure if this trend will continue, or if these expression changes will stick around long beyond the exposure to doxycycline.
+
+![SPN_IGV](figures/Spn_IGV.png)
+
+``` r
+spn_results <- stat_results_all %>% filter(gene == "Spn")
+
+print(spn_results)
+```
+
+```
+##   gene comparison    p_value fold_change
+## 1  Spn    0 vs 12 0.25598317   0.8093385
+## 2  Spn    0 vs 24 0.01452677   0.2354086
+## 3  Spn    0 vs 48 0.01212807   0.1692607
+## 4  Spn    0 vs 96 0.02373469   0.4494163
+```
+
 ## Biological Interpretation of Modules
 
-### Module 1: Inflammatory/Stress Response
+### Inflammatory/Stress Response
 Genes: *Aoc3, Abcc2, Nlrp3, Kng1, Klf17, Spn*
+
+## InflammationHeatmap Visualization
+
+``` r
+# Define the genes to include
+genes_of_interest <- c("Aoc3", "Abcc2", "Nlrp3", "Kng1", "Klf17", "Spn")
+
+# Filter the dataset for the genes of interest
+infl_heatmap_matrix <- data_cleaned %>%
+  filter(gene_name %in% genes_of_interest) %>%
+  distinct(gene_name, .keep_all = TRUE) %>%
+  select(gene_name, starts_with("WT")) %>%
+  column_to_rownames("gene_name") %>%
+  mutate(across(everything(), as.numeric)) %>%
+  replace(is.na(.), 0) %>%  # Replace NAs with zeros
+  as.matrix()
+
+infl_heatmap_matrix[!is.finite(infl_heatmap_matrix)] <- 0
+
+# Log2 transformation
+infl_heatmap_matrix_log <- log2(infl_heatmap_matrix + 1)
+
+infl_unclustered_heatmap <- pheatmap(
+   infl_heatmap_matrix_log,
+   cluster_rows = FALSE,
+   cluster_cols = FALSE,
+   scale = "row",
+   fontsize = 10,
+   fontsize_row = 8,
+   fontsize_col = 8,
+   angle_col = 45,
+   main = "Log2 Expression Heatmap (Inflammation/Stress Genes)")
+```
+
+![](project_files/figure-html/imflammatory-heatmap-visualization-1.png)<!-- -->
+
+``` r
+ggsave(filename = "figures/Infl_heatmap.png", plot = infl_unclustered_heatmap, width = 8, height = 10)
+```
+![INFL_Heatmapo](figures/Infl_heatmap.png)
 
 ## Conclusions
 Our analyses reveal distinct biological modules triggered by doxycycline exposure:

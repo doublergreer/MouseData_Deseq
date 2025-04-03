@@ -459,7 +459,7 @@ print(spn_results)
 Genes: *Aoc3, Abcc2, Nlrp3, Kng1, Klf17, Spn*
 
 ## InflammationHeatmap Visualization
-```{r heatmap-visualization}
+```{r imflammatory-heatmap-visualization}
 # Define the genes to include
 genes_of_interest <- c("Aoc3", "Abcc2", "Nlrp3", "Kng1", "Klf17", "Spn")
 
@@ -473,7 +473,7 @@ infl_heatmap_matrix <- data_cleaned %>%
   replace(is.na(.), 0) %>%  # Replace NAs with zeros
   as.matrix()
 
-infl_heatmap_matrix[!is.finite(heatmap_matrix)] <- 0
+infl_heatmap_matrix[!is.finite(infl_heatmap_matrix)] <- 0
 
 # Log2 transformation
 infl_heatmap_matrix_log <- log2(infl_heatmap_matrix + 1)
