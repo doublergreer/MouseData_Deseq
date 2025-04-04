@@ -395,67 +395,141 @@ legend("topright", legend = paste("Module", 1:max(V(network)$module)),
        col = rainbow(max(V(network)$module)), pch = 19, bty = "n")
 ```
 
-## AOC3 Downregulation:
-![aoc3_expression_graph](figures/Aoc3_expression.png)
-We identified significant downregulation of a lesser-known gene that contributes to inflammation, through the production of the oxidative VAP-1(vascular adhesion protein). This protein is thought to contribute to the progression of vascular disorders and kidney complications. Additionally, its levels have been shown to be correlated with all-cause mortality rates in type 2 diabetics. 
+## Key Gene Expression Changes
 
-We observed a ~6.25-fold reduction of AOC3 expression from the 0 to 96 hours timepoints. Whether this trend continues further from doxycycline exposure or is a more short-term change in expression remains to be seen.
+Here we highlight specific genes showing interesting expression patterns and potential biological relevance.
+
+## AOC3 Downregulation
+We identified significant downregulation of a lesser-known gene that contributes to inflammation, through the production of the oxidative VAP-1(vascular adhesion protein). 
+This protein is thought to contribute to the progression of vascular disorders and kidney complications. 
+Additionally, its levels have been shown to be correlated with all-cause mortality rates in type 2 diabetics. 
+We observed a ~6.25-fold reduction of AOC3 expression from the 0 to 96 hours timepoints. 
+Whether this trend continues further from doxycycline exposure or is a more short-term change in expression remains to be seen.
 
 Li HY, Jiang YD, Chang TJ, Wei JN, Lin MS, Lin CH, Chiang FT, Shih SR, Hung CS, Hua CH, Smith DJ, Vanio J, Chuang LM. Serum vascular adhesion protein-1 predicts 10-year cardiovascular and cancer mortality in individuals with type 2 diabetes. Diabetes. 2011 Mar;60(3):993-9. doi: 10.2337/db10-0607. Epub 2011 Jan 31. PMID: 21282368; PMCID: PMC3046860.
 
-![AOC3_IGV](figures/AOC3_IGV.png)
+```{r plot-aoc3, echo=FALSE}
+# Find the specific summary data for Aoc3
+aoc3_summary <- gene_summary_list[["Aoc3"]]
+aoc3_summary$timepoint <- as.numeric(as.character(aoc3_summary$timepoint))
+
+ggplot(aoc3_summary, aes(x = timepoint, y = mean, group = 1)) +
+  geom_line() + geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  scale_x_continuous(breaks = unique(aoc3_summary$timepoint)) +
+  labs(title = "Aoc3 Expression Across Time", y = "Mean Count", x = "Time (hours)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## AOC3 IGV
+![alt text](figures/AOC3_IGV.png)
 
 ```{r AOC3}
 aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
-
-print(aoc3_results)
+knitr::kable(aoc3_results, digits = 3)
 ```
 
 ## KLF17 Downregulation
-![Klf17_expression_graph](figures/Klf17_expression.png)
-
-We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours, so we aren't sure if this trend will continue, with expression returning to baseline. 
-
+We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). 
+Interestingly, the expression seemed to rebound over the next 48 hours, so we aren't sure if this trend will continue, with expression returning to baseline. 
 KLF17 (Krueppel-like factor 17), is a transcription factor that is involved in the processes of stem cell differentiation, so reduced levels may influence the direction that these cells take, though we are not sure in what capacity.
 
+```{r plot-klf17, echo=FALSE}
+# Find the specific summary data for Klf17
+klf17_summary <- gene_summary_list[["Klf17"]]
+klf17_summary$timepoint <- as.numeric(as.character(klf17_summary$timepoint))
+
+ggplot(klf17_summary, aes(x = timepoint, y = mean, group = 1)) +
+  geom_line() + geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  scale_x_continuous(breaks = unique(klf17_summary$timepoint)) +
+  labs(title = "Klf17 Expression Across Time", y = "Mean Count", x = "Time (hours)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## KLF17 IGV
 ![KLF17_IGV](figures/klf17_IGV.png)
 
 ```{r KLF17}
 klf17_results <- stat_results_all %>% filter(gene == "Klf17")
-
-print(klf17_results)
+knitr::kable(klf17_results, digits = 3)
 ```
 
 ## ABCC2 Downregulation
-![ABCC2_expression_graph](figures/Abcc2_expression.png)
-ABCC2 (ATP-binding cassette subfamily C member 2) is a gene associated with drug resistance, and plays a role in optimal functioning of the kidney and liver. It is involved in the transportation of foreign substances, toxins, and drugs inside the body. With this role, the significant, 4-fold reduction we see in ABCC2 expression after exposure to doxycycline may lead to increased inflammation, since ABCC2 is involved in the transportation of the toxic and inflammatory substances out of the system.
+ABCC2 (ATP-binding cassette subfamily C member 2) is a gene associated with drug resistance, and plays a role in optimal functioning of the kidney and liver.
+It is involved in the transportation of foreign substances, toxins, and drugs inside the body.
+With this role, the significant, 4-fold reduction we see in ABCC2 expression after exposure to doxycycline may lead to increased inflammation, since ABCC2 is involved in the transportation of the toxic and inflammatory substances out of the system.
 
+```{r plot-abcc2, echo=FALSE}
+# Find the specific summary data for Abcc2
+abcc2_summary <- gene_summary_list[["Abcc2"]]
+abcc2_summary$timepoint <- as.numeric(as.character(abcc2_summary$timepoint))
+
+ggplot(abcc2_summary, aes(x = timepoint, y = mean, group = 1)) +
+  geom_line() + geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  scale_x_continuous(breaks = unique(abcc2_summary$timepoint)) +
+  labs(title = "Abcc2 Expression Across Time", y = "Mean Count", x = "Time (hours)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## ABCC2 IGV
 ![ABCC2_IGV](figures/Abcc2_IGV.png)
 
 ```{r Abcc2}
 abcc2_results <- stat_results_all %>% filter(gene == "Abcc2")
-
-print(abcc2_results)
+knitr::kable(abcc2_results, digits = 3)
 ```
 
 ## NLRP3 Downregulation
-![NLRP3_expression_graph](figures/Nlrp3_expression.png)
-NLRP3 (NLR family pyrin domain containing 3) is a protein heavily involved in regulating immune inflammatory response, through its role in the inflammasome, a protein complex involved in the detection of cell damage and stress. Since NLRP3 activates inflammatory signaling, lower levels are likely to contribute to the inflammation-lowering properties that doxycycline is famous for.
-
+NLRP3 (NLR family pyrin domain containing 3) is a protein heavily involved in regulating immune inflammatory response, through its role in the inflammasome, a protein complex involved in the detection of cell damage and stress. 
+Since NLRP3 activates inflammatory signaling, lower levels are likely to contribute to the inflammation-lowering properties that doxycycline is famous for.
 We observed a ~4.5-fold reduction in NLRP3 levels from the 0 to 96 hour timepoints, so we believe this gene is one of the key players in doxycycline's effects on stress/inflammatory response.
 
+```{r plot-nlrp3, echo=FALSE}
+# Find the specific summary data for Nlrp3
+nlrp3_summary <- gene_summary_list[["Nlrp3"]]
+nlrp3_summary$timepoint <- as.numeric(as.character(nlrp3_summary$timepoint))
+
+ggplot(nlrp3_summary, aes(x = timepoint, y = mean, group = 1)) +
+  geom_line() + geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  scale_x_continuous(breaks = unique(nlrp3_summary$timepoint)) +
+  labs(title = "Nlrp3 Expression Across Time", y = "Mean Count", x = "Time (hours)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## NLRP3 IGV
 ![NLRP3_IGV](figures/Nlrp3_IGV.png)
 ```{r NLRP3}
 nlrp3_results <- stat_results_all %>% filter(gene == "Nlrp3")
-
-print(nlrp3_results)
+knitr::kable(nlrp3_results, digits = 3)
 ```
 
-## KNG1 Downregulation
-![KNG1_expression_graph](figures/Kng1_expression.png)
-KNG1 (kininogen 1) is a protein that is directly involved in the production of bradykinin, in the kallikrein-kinin system. Bradykinin is often called an inflammatory mediator, for its complex role in inflammatory systems. Through different mechanisms, bradykinin can cause both vasoconstriction and vasoconstriction, acting as a sort of regulator.
+## KNG1 Downregulation:
+KNG1 (kininogen 1) is a protein that is directly involved in the production of bradykinin, in the kallikrein-kinin system. Bradykinin is often called an inflammatory mediator, for its complex role in inflammatory systems.
+Through different mechanisms, bradykinin can cause both vasoconstriction and vasoconstriction, acting as a sort of regulator.
 With this, the effect of ~5-fold reduction in KNG1 expressions is unclear, however it is certain that doxycycline is having an impact on this system.
 
+```{r plot-kng1, echo=FALSE}
+# Find the specific summary data for Kng1
+kng1_summary <- gene_summary_list[["Kng1"]]
+kng1_summary$timepoint <- as.numeric(as.character(kng1_summary$timepoint))
+
+ggplot(kng1_summary, aes(x = timepoint, y = mean, group = 1)) +
+  geom_line() + geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  scale_x_continuous(breaks = unique(kng1_summary$timepoint)) +
+  labs(title = "Kng1 Expression Across Time", y = "Mean Count", x = "Time (hours)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## KNG1 IGV
 ![KNG1_IGV](figures/Kng1_IGV.png)
 
 ```{r KNG1}
@@ -465,18 +539,31 @@ print(kng1_results)
 ```
 
 ## SPN Downregulation
-![SPN_expression_graph](figures/Spn_expression.png)
-Spn (Sialophorin) is a protein on the surface of many cells, particularly immune cells, including T cells, monocytes, and granulocytes. It is involved in immune signaling and inflammatory regulation.
+Spn (Sialophorin) is a protein on the surface of many cells, particularly immune cells, including T cells, monocytes, and granulocytes.
+It is involved in immune signaling and inflammatory regulation.
+A reduction in Spn expression may actually be pro-inflammatory because the protein regulates the behavior of immune cells, so lower levels can throw this system out of balance.
+Additionally, lower Spn levels are correlated with reduced immune response, since mounting a proper response is reliant on signals from Spn.
+While we noticed a steep decrease in the expression initially(almost 6-fold reduction within 48 hours), it seemed to recover significantly by the time we recorded the 96 hour timepoint, down to a little over a 2-fold reduction.
+Again, we are not sure if this trend will continue, or if these expression changes will stick around long beyond the exposure to doxycycline.
 
-A reduction in Spn expresssion may actually be pro-inflammatory because the protein regulates the behavior of immune cells, so lower levels can throw this system out of balance. Additionally, lower Spn levels are correlated with reduced immune response, since mounting a proper response is reliant on signals from Spn.
+```{r plot-spn, echo=FALSE}
+# Find the specific summary data for Spn
+spn_summary <- gene_summary_list[["Spn"]]
+spn_summary$timepoint <- as.numeric(as.character(spn_summary$timepoint))
+ggplot(spn_summary, aes(x = timepoint, y = mean, group = 1)) +
+  geom_line() + geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  scale_x_continuous(breaks = unique(spn_summary$timepoint)) +
+  labs(title = "Spn Expression Across Time", y = "Mean Count", x = "Time (hours)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
 
-While we noticed a steep decrease in the expression initially(almost 6-fold reduction within 48 hours), it seemed to recover significantly by the time we recorded the 96 hour timepoint, down to a little over a 2-fold reduction. Again, we are not sure if this trend will continue, or if these expression changes will stick around long beyond the exposure to doxycycline.
-
+## SPN IGV
 ![SPN_IGV](figures/Spn_IGV.png)
 ```{r Spn}
 spn_results <- stat_results_all %>% filter(gene == "Spn")
-
-print(spn_results)
+knitr::kable(spn_results, digits = 3)
 ```
 
 ## Biological Interpretation of Modules

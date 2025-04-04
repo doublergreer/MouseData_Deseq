@@ -413,19 +413,13 @@ stat_results_list <- lapply(names(gene_long_list), function(gene) {
 # combining all results into one data frame:
 stat_results_all <- do.call(rbind, stat_results_list)
 DT::datatable(stat_results_all,
-             options = list(pageLength = 10),
-             caption = "T-test results comparing each time point to 0 hours for significantly changed genes.")
+              options = list(pageLength = 10),
+              caption = "T-test results comparing each time point to 0 hours for significantly changed genes.")
 ```
 
 ```{=html}
-<div class="datatables html-widget html-fill-item" id="htmlwidget-90cfe7ffeb3d2a8690d6" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-90cfe7ffeb3d2a8690d6">{"x":{"filter":"none","vertical":false,"caption":"<caption>T-test results comparing each time point to 0 hours for significantly changed genes.<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84"],["Abcc2","Abcc2","Abcc2","Abcc2","Ankrd34a","Ankrd34a","Ankrd34a","Ankrd34a","Aoc3","Aoc3","Aoc3","Aoc3","Apol8","Apol8","Apol8","Apol8","Cphx3","Cphx3","Cphx3","Cphx3","Cyp1a1","Cyp1a1","Cyp1a1","Cyp1a1","H19","H19","H19","H19","Khdc1c","Khdc1c","Khdc1c","Khdc1c","Klf17","Klf17","Klf17","Klf17","Kng1","Kng1","Kng1","Kng1","Krt13","Krt13","Krt13","Krt13","Lhx5","Lhx5","Lhx5","Lhx5","Mir6236","Mir6236","Mir6236","Mir6236","Nlrp3","Nlrp3","Nlrp3","Nlrp3","Obox4-ps18","Obox4-ps18","Obox4-ps18","Obox4-ps18","Pgk1-rs7","Pgk1-rs7","Pgk1-rs7","Pgk1-rs7","Ppp1r3c","Ppp1r3c","Ppp1r3c","Ppp1r3c","Rpl31-ps15","Rpl31-ps15","Rpl31-ps15","Rpl31-ps15","Rps12-ps9","Rps12-ps9","Rps12-ps9","Rps12-ps9","Spink1","Spink1","Spink1","Spink1","Spn","Spn","Spn","Spn"],["0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96"],[0.2078329668924109,0.03204837140688661,0.02771523587004675,0.0373631385833403,0.3239069592002808,0.02014826295944722,0.0001963028704826119,0.4258671058440021,0.1094700192664543,0.03435160368951364,0.03420069942572117,0.04206385514768415,0.2621974488819634,0.005159201013866528,0.01411316696056577,0.03524213911096669,0.9728617839806448,0.4226497308103743,0.4226497308103743,0.867128967643767,0.9200550836395722,0.07196230671964995,0.01200464973322259,0.3779768160473364,0.4704142556285894,0.01868765359990783,0.02245437151988822,0.03245964870494093,0.5603493432106302,0.003250608230440483,0.07414726542596274,0.2892254769580649,0.08963494268118875,0.01450698782262426,0.01764389890899918,0.0324071298432206,0.04151638934318281,0.02931127188447565,0.004320424036504284,0.008713439780354585,0.05458230084660932,0.001266557198681815,0.002100608429579233,0.004992314002076097,0.95935052862134,0.04666174760883258,0.0393849724226243,0.2571190556781133,0.09797818325736336,0.4506195949453572,0.1405766657309898,0.2475439977177327,0.1887337807205194,0.01550864135573569,0.01306275236714662,0.01043967765822111,0.4243509527736976,0.07548286506027585,0.01984447917163299,0.5627218800629621,0.01052023114108023,0.1852936917891239,0.1836538777597049,null,0.07322895157573271,0.02473643053462618,0.03079548814609955,0.02075424251798494,0.2103337975065458,0.2065968478970246,0.02565362592053126,0.08419901708493241,0.1065254694556334,0.121148276250227,0.09049990897249136,0.2579107428104196,0.4433674614055808,0.03598986316541734,0.03264696060780917,0.7783676532918313,0.2559831739770729,0.01452677026515282,0.0121280652004508,0.02373469210311554],[0.703125,0.125,0.234375,0.25,0.7627118644067796,0.3389830508474576,0.1694915254237288,0.9322033898305083,0.5147058823529411,0.1764705882352941,0.2205882352941176,0.1617647058823529,0.7866666666666667,0.1733333333333333,0.3333333333333334,0.5466666666666666,0.952467177301328,0,0,0.7827612729545238,1.05,2.3,2.45,5.55,0.8424778761061946,1.447787610619469,3.355750442477876,3.424776991150443,1.337270341207349,5.686113099498926,3.840849439274636,2.006084466714388,0.64,0.24,0.1733333333333333,0.4133333333333333,0.5158024594658103,0.3803164408239994,0.1198989582517428,0.2002428135035639,0.5934065934065934,0.1428571428571428,0.2857142857142857,0.4505494505494506,0.984375,0.171875,0.203125,0.609375,0.5815899581589958,4.98744769874477,0.6694560669456067,1.355648535564854,0.6732673267326733,0.1188118811881188,0.3465346534653466,0.2178217821782178,0.8566471877282688,0.386493334550767,0,0.7345233747260773,null,null,null,null,0.5652173913043478,0.1739130434782609,0.3913043478260869,0.3043478260869565,4.050424363454818,3.919870194707938,7.01797304043934,2.849725411882177,2.276516020493997,3.492161810812878,3.876806607019959,1.84553032040988,0.6739130434782609,0.1521739130434783,0.108695652173913,0.8695652173913043,0.8093385214007781,0.235408560311284,0.169260700389105,0.4494163424124513]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene<\/th>\n      <th>comparison<\/th>\n      <th>p_value<\/th>\n      <th>fold_change<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"gene","targets":1},{"name":"comparison","targets":2},{"name":"p_value","targets":3},{"name":"fold_change","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-```
-
-``` r
-# knitr::kable(stat_results_all,
-#              digits = 3, # Control decimal places
-#              caption = "T-test results comparing each time point to 0 hours for significantly changed genes.")
+<div class="datatables html-widget html-fill-item" id="htmlwidget-4663b27c288aa821b568" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4663b27c288aa821b568">{"x":{"filter":"none","vertical":false,"caption":"<caption>T-test results comparing each time point to 0 hours for significantly changed genes.<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84"],["Abcc2","Abcc2","Abcc2","Abcc2","Ankrd34a","Ankrd34a","Ankrd34a","Ankrd34a","Aoc3","Aoc3","Aoc3","Aoc3","Apol8","Apol8","Apol8","Apol8","Cphx3","Cphx3","Cphx3","Cphx3","Cyp1a1","Cyp1a1","Cyp1a1","Cyp1a1","H19","H19","H19","H19","Khdc1c","Khdc1c","Khdc1c","Khdc1c","Klf17","Klf17","Klf17","Klf17","Kng1","Kng1","Kng1","Kng1","Krt13","Krt13","Krt13","Krt13","Lhx5","Lhx5","Lhx5","Lhx5","Mir6236","Mir6236","Mir6236","Mir6236","Nlrp3","Nlrp3","Nlrp3","Nlrp3","Obox4-ps18","Obox4-ps18","Obox4-ps18","Obox4-ps18","Pgk1-rs7","Pgk1-rs7","Pgk1-rs7","Pgk1-rs7","Ppp1r3c","Ppp1r3c","Ppp1r3c","Ppp1r3c","Rpl31-ps15","Rpl31-ps15","Rpl31-ps15","Rpl31-ps15","Rps12-ps9","Rps12-ps9","Rps12-ps9","Rps12-ps9","Spink1","Spink1","Spink1","Spink1","Spn","Spn","Spn","Spn"],["0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96"],[0.2078329668924109,0.03204837140688661,0.02771523587004675,0.0373631385833403,0.3239069592002808,0.02014826295944722,0.0001963028704826119,0.4258671058440021,0.1094700192664543,0.03435160368951364,0.03420069942572117,0.04206385514768415,0.2621974488819634,0.005159201013866528,0.01411316696056577,0.03524213911096669,0.9728617839806448,0.4226497308103743,0.4226497308103743,0.867128967643767,0.9200550836395722,0.07196230671964995,0.01200464973322259,0.3779768160473364,0.4704142556285894,0.01868765359990783,0.02245437151988822,0.03245964870494093,0.5603493432106302,0.003250608230440483,0.07414726542596274,0.2892254769580649,0.08963494268118875,0.01450698782262426,0.01764389890899918,0.0324071298432206,0.04151638934318281,0.02931127188447565,0.004320424036504284,0.008713439780354585,0.05458230084660932,0.001266557198681815,0.002100608429579233,0.004992314002076097,0.95935052862134,0.04666174760883258,0.0393849724226243,0.2571190556781133,0.09797818325736336,0.4506195949453572,0.1405766657309898,0.2475439977177327,0.1887337807205194,0.01550864135573569,0.01306275236714662,0.01043967765822111,0.4243509527736976,0.07548286506027585,0.01984447917163299,0.5627218800629621,0.01052023114108023,0.1852936917891239,0.1836538777597049,null,0.07322895157573271,0.02473643053462618,0.03079548814609955,0.02075424251798494,0.2103337975065458,0.2065968478970246,0.02565362592053126,0.08419901708493241,0.1065254694556334,0.121148276250227,0.09049990897249136,0.2579107428104196,0.4433674614055808,0.03598986316541734,0.03264696060780917,0.7783676532918313,0.2559831739770729,0.01452677026515282,0.0121280652004508,0.02373469210311554],[0.703125,0.125,0.234375,0.25,0.7627118644067796,0.3389830508474576,0.1694915254237288,0.9322033898305083,0.5147058823529411,0.1764705882352941,0.2205882352941176,0.1617647058823529,0.7866666666666667,0.1733333333333333,0.3333333333333334,0.5466666666666666,0.952467177301328,0,0,0.7827612729545238,1.05,2.3,2.45,5.55,0.8424778761061946,1.447787610619469,3.355750442477876,3.424776991150443,1.337270341207349,5.686113099498926,3.840849439274636,2.006084466714388,0.64,0.24,0.1733333333333333,0.4133333333333333,0.5158024594658103,0.3803164408239994,0.1198989582517428,0.2002428135035639,0.5934065934065934,0.1428571428571428,0.2857142857142857,0.4505494505494506,0.984375,0.171875,0.203125,0.609375,0.5815899581589958,4.98744769874477,0.6694560669456067,1.355648535564854,0.6732673267326733,0.1188118811881188,0.3465346534653466,0.2178217821782178,0.8566471877282688,0.386493334550767,0,0.7345233747260773,null,null,null,null,0.5652173913043478,0.1739130434782609,0.3913043478260869,0.3043478260869565,4.050424363454818,3.919870194707938,7.01797304043934,2.849725411882177,2.276516020493997,3.492161810812878,3.876806607019959,1.84553032040988,0.6739130434782609,0.1521739130434783,0.108695652173913,0.8695652173913043,0.8093385214007781,0.235408560311284,0.169260700389105,0.4494163424124513]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene<\/th>\n      <th>comparison<\/th>\n      <th>p_value<\/th>\n      <th>fold_change<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"gene","targets":1},{"name":"comparison","targets":2},{"name":"p_value","targets":3},{"name":"fold_change","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
 
 ## Heatmap Visualization
@@ -495,103 +489,121 @@ legend("topright", legend = paste("Module", 1:max(V(network)$module)),
 
 ![](project_files/figure-html/network-analysis-1.png)<!-- -->
 
-## AOC3 Downregulation:
-![aoc3_expression_graph](figures/Aoc3_expression.png)
-We identified significant downregulation of a lesser-known gene that contributes to inflammation, through the production of the oxidative VAP-1(vascular adhesion protein). This protein is thought to contribute to the progression of vascular disorders and kidney complications. Additionally, its levels have been shown to be correlated with all-cause mortality rates in type 2 diabetics. 
+## Key Gene Expression Changes
 
-We observed a ~6.25-fold reduction of AOC3 expression from the 0 to 96 hours timepoints. Whether this trend continues further from doxycycline exposure or is a more short-term change in expression remains to be seen.
+Here we highlight specific genes showing interesting expression patterns and potential biological relevance.
+
+## AOC3 Downregulation:
+We identified significant downregulation of a lesser-known gene that contributes to inflammation, through the production of the oxidative VAP-1(vascular adhesion protein). 
+This protein is thought to contribute to the progression of vascular disorders and kidney complications. 
+Additionally, its levels have been shown to be correlated with all-cause mortality rates in type 2 diabetics. 
+We observed a ~6.25-fold reduction of AOC3 expression from the 0 to 96 hours timepoints. 
+Whether this trend continues further from doxycycline exposure or is a more short-term change in expression remains to be seen.
 
 Li HY, Jiang YD, Chang TJ, Wei JN, Lin MS, Lin CH, Chiang FT, Shih SR, Hung CS, Hua CH, Smith DJ, Vanio J, Chuang LM. Serum vascular adhesion protein-1 predicts 10-year cardiovascular and cancer mortality in individuals with type 2 diabetes. Diabetes. 2011 Mar;60(3):993-9. doi: 10.2337/db10-0607. Epub 2011 Jan 31. PMID: 21282368; PMCID: PMC3046860.
 
-![AOC3_IGV](figures/AOC3_IGV.png)
+![](project_files/figure-html/plot-aoc3-1.png)<!-- -->
+
+## AOC3 IGV:
+![alt text](figures/AOC3_IGV.png)
 
 
 ``` r
 aoc3_results <- stat_results_all %>% filter(gene == "Aoc3")
-
-print(aoc3_results)
+knitr::kable(aoc3_results, digits = 3)
 ```
 
-```
-##   gene comparison    p_value fold_change
-## 1 Aoc3    0 vs 12 0.10947002   0.5147059
-## 2 Aoc3    0 vs 24 0.03435160   0.1764706
-## 3 Aoc3    0 vs 48 0.03420070   0.2205882
-## 4 Aoc3    0 vs 96 0.04206386   0.1617647
-```
 
-## KLF17 Downregulation
-![Klf17_expression_graph](figures/Klf17_expression.png)
 
-We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). Interestingly, the expression seemed to rebound over the next 48 hours, so we aren't sure if this trend will continue, with expression returning to baseline. 
+|gene |comparison | p_value| fold_change|
+|:----|:----------|-------:|-----------:|
+|Aoc3 |0 vs 12    |   0.109|       0.515|
+|Aoc3 |0 vs 24    |   0.034|       0.176|
+|Aoc3 |0 vs 48    |   0.034|       0.221|
+|Aoc3 |0 vs 96    |   0.042|       0.162|
 
+## KLF17 Downregulation:
+We saw that the expression of the KLF17 gene had a sharp reduction in expression, reaching its lowest at 48 hours(~5.75 fold reduction). 
+Interestingly, the expression seemed to rebound over the next 48 hours, so we aren't sure if this trend will continue, with expression returning to baseline. 
 KLF17 (Krueppel-like factor 17), is a transcription factor that is involved in the processes of stem cell differentiation, so reduced levels may influence the direction that these cells take, though we are not sure in what capacity.
 
+![](project_files/figure-html/plot-klf17-1.png)<!-- -->
+
+## KLF17 IGV:
 ![KLF17_IGV](figures/klf17_IGV.png)
 
 
 ``` r
 klf17_results <- stat_results_all %>% filter(gene == "Klf17")
-
-print(klf17_results)
+knitr::kable(klf17_results, digits = 3)
 ```
 
-```
-##    gene comparison    p_value fold_change
-## 1 Klf17    0 vs 12 0.08963494   0.6400000
-## 2 Klf17    0 vs 24 0.01450699   0.2400000
-## 3 Klf17    0 vs 48 0.01764390   0.1733333
-## 4 Klf17    0 vs 96 0.03240713   0.4133333
-```
 
-## ABCC2 Downregulation
-![ABCC2_expression_graph](figures/Abcc2_expression.png)
-ABCC2 (ATP-binding cassette subfamily C member 2) is a gene associated with drug resistance, and plays a role in optimal functioning of the kidney and liver. It is involved in the transportation of foreign substances, toxins, and drugs inside the body. With this role, the significant, 4-fold reduction we see in ABCC2 expression after exposure to doxycycline may lead to increased inflammation, since ABCC2 is involved in the transportation of the toxic and inflammatory substances out of the system.
 
+|gene  |comparison | p_value| fold_change|
+|:-----|:----------|-------:|-----------:|
+|Klf17 |0 vs 12    |   0.090|       0.640|
+|Klf17 |0 vs 24    |   0.015|       0.240|
+|Klf17 |0 vs 48    |   0.018|       0.173|
+|Klf17 |0 vs 96    |   0.032|       0.413|
+
+## ABCC2 Downregulation:
+ABCC2 (ATP-binding cassette subfamily C member 2) is a gene associated with drug resistance, and plays a role in optimal functioning of the kidney and liver.
+It is involved in the transportation of foreign substances, toxins, and drugs inside the body.
+With this role, the significant, 4-fold reduction we see in ABCC2 expression after exposure to doxycycline may lead to increased inflammation, since ABCC2 is involved in the transportation of the toxic and inflammatory substances out of the system.
+
+![](project_files/figure-html/plot-abcc2-1.png)<!-- -->
+
+## ABCC2 IGV:
 ![ABCC2_IGV](figures/Abcc2_IGV.png)
 
 
 ``` r
 abcc2_results <- stat_results_all %>% filter(gene == "Abcc2")
-
-print(abcc2_results)
+knitr::kable(abcc2_results, digits = 3)
 ```
 
-```
-##    gene comparison    p_value fold_change
-## 1 Abcc2    0 vs 12 0.20783297    0.703125
-## 2 Abcc2    0 vs 24 0.03204837    0.125000
-## 3 Abcc2    0 vs 48 0.02771524    0.234375
-## 4 Abcc2    0 vs 96 0.03736314    0.250000
-```
 
-## NLRP3 Downregulation
-![NLRP3_expression_graph](figures/Nlrp3_expression.png)
-NLRP3 (NLR family pyrin domain containing 3) is a protein heavily involved in regulating immune inflammatory response, through its role in the inflammasome, a protein complex involved in the detection of cell damage and stress. Since NLRP3 activates inflammatory signaling, lower levels are likely to contribute to the inflammation-lowering properties that doxycycline is famous for.
 
+|gene  |comparison | p_value| fold_change|
+|:-----|:----------|-------:|-----------:|
+|Abcc2 |0 vs 12    |   0.208|       0.703|
+|Abcc2 |0 vs 24    |   0.032|       0.125|
+|Abcc2 |0 vs 48    |   0.028|       0.234|
+|Abcc2 |0 vs 96    |   0.037|       0.250|
+
+## NLRP3 Downregulation:
+NLRP3 (NLR family pyrin domain containing 3) is a protein heavily involved in regulating immune inflammatory response, through its role in the inflammasome, a protein complex involved in the detection of cell damage and stress. 
+Since NLRP3 activates inflammatory signaling, lower levels are likely to contribute to the inflammation-lowering properties that doxycycline is famous for.
 We observed a ~4.5-fold reduction in NLRP3 levels from the 0 to 96 hour timepoints, so we believe this gene is one of the key players in doxycycline's effects on stress/inflammatory response.
 
+![](project_files/figure-html/plot-nlrp3-1.png)<!-- -->
+
+## NLRP3 IGV:
 ![NLRP3_IGV](figures/Nlrp3_IGV.png)
 
 ``` r
 nlrp3_results <- stat_results_all %>% filter(gene == "Nlrp3")
-
-print(nlrp3_results)
+knitr::kable(nlrp3_results, digits = 3)
 ```
 
-```
-##    gene comparison    p_value fold_change
-## 1 Nlrp3    0 vs 12 0.18873378   0.6732673
-## 2 Nlrp3    0 vs 24 0.01550864   0.1188119
-## 3 Nlrp3    0 vs 48 0.01306275   0.3465347
-## 4 Nlrp3    0 vs 96 0.01043968   0.2178218
-```
 
-## KNG1 Downregulation
-![KNG1_expression_graph](figures/Kng1_expression.png)
-KNG1 (kininogen 1) is a protein that is directly involved in the production of bradykinin, in the kallikrein-kinin system. Bradykinin is often called an inflammatory mediator, for its complex role in inflammatory systems. Through different mechanisms, bradykinin can cause both vasoconstriction and vasoconstriction, acting as a sort of regulator.
+
+|gene  |comparison | p_value| fold_change|
+|:-----|:----------|-------:|-----------:|
+|Nlrp3 |0 vs 12    |   0.189|       0.673|
+|Nlrp3 |0 vs 24    |   0.016|       0.119|
+|Nlrp3 |0 vs 48    |   0.013|       0.347|
+|Nlrp3 |0 vs 96    |   0.010|       0.218|
+
+## KNG1 Downregulation:
+KNG1 (kininogen 1) is a protein that is directly involved in the production of bradykinin, in the kallikrein-kinin system. Bradykinin is often called an inflammatory mediator, for its complex role in inflammatory systems.
+Through different mechanisms, bradykinin can cause both vasoconstriction and vasoconstriction, acting as a sort of regulator.
 With this, the effect of ~5-fold reduction in KNG1 expressions is unclear, however it is certain that doxycycline is having an impact on this system.
 
+![](project_files/figure-html/plot-kng1-1.png)<!-- -->
+
+## KNG1 IGV:
 ![KNG1_IGV](figures/Kng1_IGV.png)
 
 
@@ -610,28 +622,31 @@ print(kng1_results)
 ```
 
 ## SPN Downregulation
-![SPN_expression_graph](figures/Spn_expression.png)
-Spn (Sialophorin) is a protein on the surface of many cells, particularly immune cells, including T cells, monocytes, and granulocytes. It is involved in immune signaling and inflammatory regulation.
+Spn (Sialophorin) is a protein on the surface of many cells, particularly immune cells, including T cells, monocytes, and granulocytes.
+It is involved in immune signaling and inflammatory regulation.
+A reduction in Spn expression may actually be pro-inflammatory because the protein regulates the behavior of immune cells, so lower levels can throw this system out of balance.
+Additionally, lower Spn levels are correlated with reduced immune response, since mounting a proper response is reliant on signals from Spn.
+While we noticed a steep decrease in the expression initially(almost 6-fold reduction within 48 hours), it seemed to recover significantly by the time we recorded the 96 hour timepoint, down to a little over a 2-fold reduction.
+Again, we are not sure if this trend will continue, or if these expression changes will stick around long beyond the exposure to doxycycline.
 
-A reduction in Spn expresssion may actually be pro-inflammatory because the protein regulates the behavior of immune cells, so lower levels can throw this system out of balance. Additionally, lower Spn levels are correlated with reduced immune response, since mounting a proper response is reliant on signals from Spn.
+![](project_files/figure-html/plot-spn-1.png)<!-- -->
 
-While we noticed a steep decrease in the expression initially(almost 6-fold reduction within 48 hours), it seemed to recover significantly by the time we recorded the 96 hour timepoint, down to a little over a 2-fold reduction. Again, we are not sure if this trend will continue, or if these expression changes will stick around long beyond the exposure to doxycycline.
-
+## SPN IGV:
 ![SPN_IGV](figures/Spn_IGV.png)
 
 ``` r
 spn_results <- stat_results_all %>% filter(gene == "Spn")
-
-print(spn_results)
+knitr::kable(spn_results, digits = 3)
 ```
 
-```
-##   gene comparison    p_value fold_change
-## 1  Spn    0 vs 12 0.25598317   0.8093385
-## 2  Spn    0 vs 24 0.01452677   0.2354086
-## 3  Spn    0 vs 48 0.01212807   0.1692607
-## 4  Spn    0 vs 96 0.02373469   0.4494163
-```
+
+
+|gene |comparison | p_value| fold_change|
+|:----|:----------|-------:|-----------:|
+|Spn  |0 vs 12    |   0.256|       0.809|
+|Spn  |0 vs 24    |   0.015|       0.235|
+|Spn  |0 vs 48    |   0.012|       0.169|
+|Spn  |0 vs 96    |   0.024|       0.449|
 
 ## Biological Interpretation of Modules
 
