@@ -9,6 +9,8 @@ output:
     toc_float: true
     theme: cerulean
     highlight: tango
+    code_folding: hide
+    df_print: kable
 ---
 
 ```{r setup, include=FALSE}
@@ -18,29 +20,35 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Installing Packages
 ```{r install-packages, eval=FALSE}
 # every single install.packages() command we ran on fiji (may not be exhaustive)
+# NOTE: This chunk is set to eval=FALSE.
+# Run these lines interactively in your R console *only* if you need to install these packages.
+# If running on a system where packages are already installed, you can ignore this.
+# options(repos = c(CRAN = "https://cloud.r-project.org")) # may need to be commented out if not compliling locally
 options(repos = c(CRAN = "https://cloud.r-project.org")) # may need to be commented out if not compliling locally
-install.packages("tidyverse")
-install.packages("dplyr")
-install.packages("IRanges")
-install.packages("ggplot2")
-install.packages("purrr")
-install.packages("readr")
-install.packages("tibble")
-install.packages("tidyr")
-install.packages("matrixStats")
-install.packages("broom")
-install.packages("reshape")
-install.packages("reshape2")
-install.packages("igraph")
-install.packages("corrplot")
-
+install.packages(c("tidyverse",
+                   "pheatmap",
+                   "textshape",
+                   "Rcpp",
+                   "magrittr",
+                   "ggplot2",
+                   "dplyr",
+                   "IRanges",
+                   "purrr",
+                   "readr",
+                   "tibble",
+                   "tidyr",
+                   "matrixStats",
+                   "broom",
+                   "reshape",
+                   "reshape2",
+                   "igraph",
+                   "corrplot",
+                   "DT"))
 # Install BiocManager
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-BiocManager::install(version = "3.20")
-
-BiocManager::install("DESeq2")
-BiocManager::install("apeglm")
+BiocManager::install(version = "3.20") # specify version if needed
+BiocManager::install(c("DESeq2", "apeglm"))
 ```
 
 ## Loading Required Libraries
@@ -58,6 +66,7 @@ library(matrixStats)
 library(broom)
 library(igraph)
 library(corrplot)
+library(DT)
 ```
 
 ## Methods Summary
@@ -125,7 +134,7 @@ sig_flag_filtered_res_df <- filtered_res_df %>%
     )
   )
 
-ggplot(sig_flag_filtered_res_df,
+volcano_plot <- ggplot(sig_flag_filtered_res_df,
        aes(x = log2FoldChange,
            y = -log10(padj),
            color = sig_flag)) +
@@ -138,11 +147,21 @@ ggplot(sig_flag_filtered_res_df,
   geom_hline(yintercept = -log10(padj_cutoff),
              linetype = "dashed") +
   labs(
-    title = "Volcano Plot",
+    title = "Volcano Plot of Differential Expression Results",
+    subtitle = "Doxycycline Treatment",
     x = "Log2 Fold Change",
     y = "-Log10(Adjusted p-value)"
   ) +
   theme_minimal()
+# save the image in the figures folder
+ggsave(filename = "figures/volcano_plot.png",
+       plot = volcano_plot,
+       width = 6,
+       height = 4)
+```
+
+```{r volcano-plot-figure, echo=FALSE}
+knitr::include_graphics("figures/volcano_plot.png")
 ```
 
 
@@ -218,8 +237,8 @@ gene_summary_list <- lapply(gene_long_list, function(df) {
 })
 ```
 
-## Plotting the mean and standard error for each time point
-```{r plot-gene-timecourse-data}
+## Plotting the mean + standard error of each gene for each time point as a facet plot
+```{r plot-gene-timecourse-data, fig.cap="Mean expression (+/- Standard Error) over time for significantly differentially expressed genes (after filtering). Each panel represents one gene.", fig.width=12, fig.height=8, message=FALSE, warning=FALSE}
 for (gene in names(gene_summary_list)) {
   df <- gene_summary_list[[gene]]
   df$timepoint <- as.numeric(as.character(df$timepoint)) 
@@ -259,7 +278,6 @@ facet_plot <- ggplot(all_summary, aes(x = as.numeric(timepoint), y = mean, group
     title = "Expression Across Time",
     y = "Mean Count",
     x = "Time (hours)",
-    caption = "Error bars represent standard error of the mean"
   ) +
   theme(
     plot.title = element_text(hjust = 0.5, face = "bold"),
@@ -271,15 +289,10 @@ ggsave(filename = "figures/all_genes_facet_expression.png",
        plot = facet_plot,
        width = 12,
        height = 8)
+print(facet_plot)
 ```
 
-## This facet plot shows the expression of all genes across time points
-```{r all_genes_facet_expression, echo=FALSE}
-knitr::include_graphics("figures/all_genes_facet_expression.png")
-```
-
-## And a statistical analysis of expression changes
-## We compare each time point to the 0 hour time point
+## We also conducted a statistical analysis of expression changes where we compare each time point to the 0 hour time point
 ```{r comparing-to-the-zero-hour-timepoint}
 # perform t-tests for each gene at each time point
 timepoints <- c("12", "24", "48", "96")
@@ -315,7 +328,9 @@ stat_results_list <- lapply(names(gene_long_list), function(gene) {
 
 # combining all results into one data frame:
 stat_results_all <- do.call(rbind, stat_results_list)
-print(stat_results_all)
+DT::datatable(stat_results_all,
+              options = list(pageLength = 10),
+              caption = "T-test results comparing each time point to 0 hours for significantly changed genes.")
 ```
 
 ## Heatmap Visualization
@@ -347,7 +362,7 @@ pheatmap(heatmap_matrix_log,
 ```
 
 ## Co-expression Network Analysis
-```{r network-analysis}
+```{r network-analysis, warning = FALSE}
 # calculate correlation matrix
 cor_matrix <- cor(t(heatmap_matrix), method = "pearson")
 
@@ -469,7 +484,7 @@ print(spn_results)
 ### Inflammatory/Stress Response
 Genes: *Aoc3, Abcc2, Nlrp3, Kng1, Klf17, Spn*
 
-## InflammationHeatmap Visualization
+## Inflammation Heatmap Visualization
 ```{r imflammatory-heatmap-visualization}
 # Define the genes to include
 genes_of_interest <- c("Aoc3", "Abcc2", "Nlrp3", "Kng1", "Klf17", "Spn")
@@ -501,9 +516,7 @@ infl_unclustered_heatmap <- pheatmap(
    main = "Log2 Expression Heatmap (Inflammation/Stress Genes)")
 
 ggsave(filename = "figures/Infl_heatmap.png", plot = infl_unclustered_heatmap, width = 8, height = 10)
-
 ```
-![INFL_Heatmapo](figures/Infl_heatmap.png)
 
 ## Conclusions
 Our analyses reveal distinct biological modules triggered by doxycycline exposure:

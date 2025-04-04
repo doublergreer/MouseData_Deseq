@@ -1,7 +1,7 @@
 ---
 title: "RNA-Seq Analysis"
 author: "Jason Hunter and Ryan Greer"
-date: "2025-04-03"
+date: "2025-04-04"
 output: 
   html_document:
     keep_md: yes
@@ -9,6 +9,8 @@ output:
     toc_float: true
     theme: cerulean
     highlight: tango
+    code_folding: hide
+    df_print: kable
 ---
 
 
@@ -17,29 +19,35 @@ output:
 
 ``` r
 # every single install.packages() command we ran on fiji (may not be exhaustive)
+# NOTE: This chunk is set to eval=FALSE.
+# Run these lines interactively in your R console *only* if you need to install these packages.
+# If running on a system where packages are already installed, you can ignore this.
+# options(repos = c(CRAN = "https://cloud.r-project.org")) # may need to be commented out if not compliling locally
 options(repos = c(CRAN = "https://cloud.r-project.org")) # may need to be commented out if not compliling locally
-install.packages("tidyverse")
-install.packages("dplyr")
-install.packages("IRanges")
-install.packages("ggplot2")
-install.packages("purrr")
-install.packages("readr")
-install.packages("tibble")
-install.packages("tidyr")
-install.packages("matrixStats")
-install.packages("broom")
-install.packages("reshape")
-install.packages("reshape2")
-install.packages("igraph")
-install.packages("corrplot")
-
+install.packages(c("tidyverse",
+                   "pheatmap",
+                   "textshape",
+                   "Rcpp",
+                   "magrittr",
+                   "ggplot2",
+                   "dplyr",
+                   "IRanges",
+                   "purrr",
+                   "readr",
+                   "tibble",
+                   "tidyr",
+                   "matrixStats",
+                   "broom",
+                   "reshape",
+                   "reshape2",
+                   "igraph",
+                   "corrplot",
+                   "DT"))
 # Install BiocManager
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-BiocManager::install(version = "3.20")
-
-BiocManager::install("DESeq2")
-BiocManager::install("apeglm")
+BiocManager::install(version = "3.20") # specify version if needed
+BiocManager::install(c("DESeq2", "apeglm"))
 ```
 
 ## Loading Required Libraries
@@ -58,6 +66,7 @@ library(matrixStats)
 library(broom)
 library(igraph)
 library(corrplot)
+library(DT)
 ```
 
 ## Methods Summary
@@ -127,7 +136,7 @@ sig_flag_filtered_res_df <- filtered_res_df %>%
     )
   )
 
-ggplot(sig_flag_filtered_res_df,
+volcano_plot <- ggplot(sig_flag_filtered_res_df,
        aes(x = log2FoldChange,
            y = -log10(padj),
            color = sig_flag)) +
@@ -140,14 +149,20 @@ ggplot(sig_flag_filtered_res_df,
   geom_hline(yintercept = -log10(padj_cutoff),
              linetype = "dashed") +
   labs(
-    title = "Volcano Plot",
+    title = "Volcano Plot of Differential Expression Results",
+    subtitle = "Doxycycline Treatment",
     x = "Log2 Fold Change",
     y = "-Log10(Adjusted p-value)"
   ) +
   theme_minimal()
+# save the image in the figures folder
+ggsave(filename = "figures/volcano_plot.png",
+       plot = volcano_plot,
+       width = 6,
+       height = 4)
 ```
 
-![](project_files/figure-html/volcano-plot-1.png)<!-- -->
+<img src="figures/volcano_plot.png" width="1800" />
 
 
 ## There's a ton of activity amongst genes in the volcano plot, both upregulated and downregulated.
@@ -302,7 +317,7 @@ gene_summary_list <- lapply(gene_long_list, function(df) {
 })
 ```
 
-## Plotting the mean and standard error for each time point
+## Plotting the mean + standard error of each gene for each time point as a facet plot
 
 ``` r
 for (gene in names(gene_summary_list)) {
@@ -344,7 +359,6 @@ facet_plot <- ggplot(all_summary, aes(x = as.numeric(timepoint), y = mean, group
     title = "Expression Across Time",
     y = "Mean Count",
     x = "Time (hours)",
-    caption = "Error bars represent standard error of the mean"
   ) +
   theme(
     plot.title = element_text(hjust = 0.5, face = "bold"),
@@ -356,13 +370,12 @@ ggsave(filename = "figures/all_genes_facet_expression.png",
        plot = facet_plot,
        width = 12,
        height = 8)
+print(facet_plot)
 ```
 
-## This facet plot shows the expression of all genes across time points
-<img src="figures/all_genes_facet_expression.png" width="3600" />
+![Mean expression (+/- Standard Error) over time for significantly differentially expressed genes (after filtering). Each panel represents one gene.](project_files/figure-html/plot-gene-timecourse-data-1.png)
 
-## And a statistical analysis of expression changes
-## We compare each time point to the 0 hour time point
+## We also conducted a statistical analysis of expression changes where we compare each time point to the 0 hour time point
 
 ``` r
 # perform t-tests for each gene at each time point
@@ -399,95 +412,20 @@ stat_results_list <- lapply(names(gene_long_list), function(gene) {
 
 # combining all results into one data frame:
 stat_results_all <- do.call(rbind, stat_results_list)
-print(stat_results_all)
+DT::datatable(stat_results_all,
+             options = list(pageLength = 10),
+             caption = "T-test results comparing each time point to 0 hours for significantly changed genes.")
 ```
 
+```{=html}
+<div class="datatables html-widget html-fill-item" id="htmlwidget-90cfe7ffeb3d2a8690d6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-90cfe7ffeb3d2a8690d6">{"x":{"filter":"none","vertical":false,"caption":"<caption>T-test results comparing each time point to 0 hours for significantly changed genes.<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84"],["Abcc2","Abcc2","Abcc2","Abcc2","Ankrd34a","Ankrd34a","Ankrd34a","Ankrd34a","Aoc3","Aoc3","Aoc3","Aoc3","Apol8","Apol8","Apol8","Apol8","Cphx3","Cphx3","Cphx3","Cphx3","Cyp1a1","Cyp1a1","Cyp1a1","Cyp1a1","H19","H19","H19","H19","Khdc1c","Khdc1c","Khdc1c","Khdc1c","Klf17","Klf17","Klf17","Klf17","Kng1","Kng1","Kng1","Kng1","Krt13","Krt13","Krt13","Krt13","Lhx5","Lhx5","Lhx5","Lhx5","Mir6236","Mir6236","Mir6236","Mir6236","Nlrp3","Nlrp3","Nlrp3","Nlrp3","Obox4-ps18","Obox4-ps18","Obox4-ps18","Obox4-ps18","Pgk1-rs7","Pgk1-rs7","Pgk1-rs7","Pgk1-rs7","Ppp1r3c","Ppp1r3c","Ppp1r3c","Ppp1r3c","Rpl31-ps15","Rpl31-ps15","Rpl31-ps15","Rpl31-ps15","Rps12-ps9","Rps12-ps9","Rps12-ps9","Rps12-ps9","Spink1","Spink1","Spink1","Spink1","Spn","Spn","Spn","Spn"],["0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96","0 vs 12","0 vs 24","0 vs 48","0 vs 96"],[0.2078329668924109,0.03204837140688661,0.02771523587004675,0.0373631385833403,0.3239069592002808,0.02014826295944722,0.0001963028704826119,0.4258671058440021,0.1094700192664543,0.03435160368951364,0.03420069942572117,0.04206385514768415,0.2621974488819634,0.005159201013866528,0.01411316696056577,0.03524213911096669,0.9728617839806448,0.4226497308103743,0.4226497308103743,0.867128967643767,0.9200550836395722,0.07196230671964995,0.01200464973322259,0.3779768160473364,0.4704142556285894,0.01868765359990783,0.02245437151988822,0.03245964870494093,0.5603493432106302,0.003250608230440483,0.07414726542596274,0.2892254769580649,0.08963494268118875,0.01450698782262426,0.01764389890899918,0.0324071298432206,0.04151638934318281,0.02931127188447565,0.004320424036504284,0.008713439780354585,0.05458230084660932,0.001266557198681815,0.002100608429579233,0.004992314002076097,0.95935052862134,0.04666174760883258,0.0393849724226243,0.2571190556781133,0.09797818325736336,0.4506195949453572,0.1405766657309898,0.2475439977177327,0.1887337807205194,0.01550864135573569,0.01306275236714662,0.01043967765822111,0.4243509527736976,0.07548286506027585,0.01984447917163299,0.5627218800629621,0.01052023114108023,0.1852936917891239,0.1836538777597049,null,0.07322895157573271,0.02473643053462618,0.03079548814609955,0.02075424251798494,0.2103337975065458,0.2065968478970246,0.02565362592053126,0.08419901708493241,0.1065254694556334,0.121148276250227,0.09049990897249136,0.2579107428104196,0.4433674614055808,0.03598986316541734,0.03264696060780917,0.7783676532918313,0.2559831739770729,0.01452677026515282,0.0121280652004508,0.02373469210311554],[0.703125,0.125,0.234375,0.25,0.7627118644067796,0.3389830508474576,0.1694915254237288,0.9322033898305083,0.5147058823529411,0.1764705882352941,0.2205882352941176,0.1617647058823529,0.7866666666666667,0.1733333333333333,0.3333333333333334,0.5466666666666666,0.952467177301328,0,0,0.7827612729545238,1.05,2.3,2.45,5.55,0.8424778761061946,1.447787610619469,3.355750442477876,3.424776991150443,1.337270341207349,5.686113099498926,3.840849439274636,2.006084466714388,0.64,0.24,0.1733333333333333,0.4133333333333333,0.5158024594658103,0.3803164408239994,0.1198989582517428,0.2002428135035639,0.5934065934065934,0.1428571428571428,0.2857142857142857,0.4505494505494506,0.984375,0.171875,0.203125,0.609375,0.5815899581589958,4.98744769874477,0.6694560669456067,1.355648535564854,0.6732673267326733,0.1188118811881188,0.3465346534653466,0.2178217821782178,0.8566471877282688,0.386493334550767,0,0.7345233747260773,null,null,null,null,0.5652173913043478,0.1739130434782609,0.3913043478260869,0.3043478260869565,4.050424363454818,3.919870194707938,7.01797304043934,2.849725411882177,2.276516020493997,3.492161810812878,3.876806607019959,1.84553032040988,0.6739130434782609,0.1521739130434783,0.108695652173913,0.8695652173913043,0.8093385214007781,0.235408560311284,0.169260700389105,0.4494163424124513]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>gene<\/th>\n      <th>comparison<\/th>\n      <th>p_value<\/th>\n      <th>fold_change<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"columnDefs":[{"className":"dt-right","targets":[3,4]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"gene","targets":1},{"name":"comparison","targets":2},{"name":"p_value","targets":3},{"name":"fold_change","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 ```
-##          gene comparison      p_value fold_change
-## 1       Abcc2    0 vs 12 0.2078329669   0.7031250
-## 2       Abcc2    0 vs 24 0.0320483714   0.1250000
-## 3       Abcc2    0 vs 48 0.0277152359   0.2343750
-## 4       Abcc2    0 vs 96 0.0373631386   0.2500000
-## 5    Ankrd34a    0 vs 12 0.3239069592   0.7627119
-## 6    Ankrd34a    0 vs 24 0.0201482630   0.3389831
-## 7    Ankrd34a    0 vs 48 0.0001963029   0.1694915
-## 8    Ankrd34a    0 vs 96 0.4258671058   0.9322034
-## 9        Aoc3    0 vs 12 0.1094700193   0.5147059
-## 10       Aoc3    0 vs 24 0.0343516037   0.1764706
-## 11       Aoc3    0 vs 48 0.0342006994   0.2205882
-## 12       Aoc3    0 vs 96 0.0420638551   0.1617647
-## 13      Apol8    0 vs 12 0.2621974489   0.7866667
-## 14      Apol8    0 vs 24 0.0051592010   0.1733333
-## 15      Apol8    0 vs 48 0.0141131670   0.3333333
-## 16      Apol8    0 vs 96 0.0352421391   0.5466667
-## 17      Cphx3    0 vs 12 0.9728617840   0.9524672
-## 18      Cphx3    0 vs 24 0.4226497308   0.0000000
-## 19      Cphx3    0 vs 48 0.4226497308   0.0000000
-## 20      Cphx3    0 vs 96 0.8671289676   0.7827613
-## 21     Cyp1a1    0 vs 12 0.9200550836   1.0500000
-## 22     Cyp1a1    0 vs 24 0.0719623067   2.3000000
-## 23     Cyp1a1    0 vs 48 0.0120046497   2.4500000
-## 24     Cyp1a1    0 vs 96 0.3779768160   5.5500000
-## 25        H19    0 vs 12 0.4704142556   0.8424779
-## 26        H19    0 vs 24 0.0186876536   1.4477876
-## 27        H19    0 vs 48 0.0224543715   3.3557504
-## 28        H19    0 vs 96 0.0324596487   3.4247770
-## 29     Khdc1c    0 vs 12 0.5603493432   1.3372703
-## 30     Khdc1c    0 vs 24 0.0032506082   5.6861131
-## 31     Khdc1c    0 vs 48 0.0741472654   3.8408494
-## 32     Khdc1c    0 vs 96 0.2892254770   2.0060845
-## 33      Klf17    0 vs 12 0.0896349427   0.6400000
-## 34      Klf17    0 vs 24 0.0145069878   0.2400000
-## 35      Klf17    0 vs 48 0.0176438989   0.1733333
-## 36      Klf17    0 vs 96 0.0324071298   0.4133333
-## 37       Kng1    0 vs 12 0.0415163893   0.5158025
-## 38       Kng1    0 vs 24 0.0293112719   0.3803164
-## 39       Kng1    0 vs 48 0.0043204240   0.1198990
-## 40       Kng1    0 vs 96 0.0087134398   0.2002428
-## 41      Krt13    0 vs 12 0.0545823008   0.5934066
-## 42      Krt13    0 vs 24 0.0012665572   0.1428571
-## 43      Krt13    0 vs 48 0.0021006084   0.2857143
-## 44      Krt13    0 vs 96 0.0049923140   0.4505495
-## 45       Lhx5    0 vs 12 0.9593505286   0.9843750
-## 46       Lhx5    0 vs 24 0.0466617476   0.1718750
-## 47       Lhx5    0 vs 48 0.0393849724   0.2031250
-## 48       Lhx5    0 vs 96 0.2571190557   0.6093750
-## 49    Mir6236    0 vs 12 0.0979781833   0.5815900
-## 50    Mir6236    0 vs 24 0.4506195949   4.9874477
-## 51    Mir6236    0 vs 48 0.1405766657   0.6694561
-## 52    Mir6236    0 vs 96 0.2475439977   1.3556485
-## 53      Nlrp3    0 vs 12 0.1887337807   0.6732673
-## 54      Nlrp3    0 vs 24 0.0155086414   0.1188119
-## 55      Nlrp3    0 vs 48 0.0130627524   0.3465347
-## 56      Nlrp3    0 vs 96 0.0104396777   0.2178218
-## 57 Obox4-ps18    0 vs 12 0.4243509528   0.8566472
-## 58 Obox4-ps18    0 vs 24 0.0754828651   0.3864933
-## 59 Obox4-ps18    0 vs 48 0.0198444792   0.0000000
-## 60 Obox4-ps18    0 vs 96 0.5627218801   0.7345234
-## 61   Pgk1-rs7    0 vs 12 0.0105202311         Inf
-## 62   Pgk1-rs7    0 vs 24 0.1852936918         Inf
-## 63   Pgk1-rs7    0 vs 48 0.1836538778         Inf
-## 64   Pgk1-rs7    0 vs 96          NaN         NaN
-## 65    Ppp1r3c    0 vs 12 0.0732289516   0.5652174
-## 66    Ppp1r3c    0 vs 24 0.0247364305   0.1739130
-## 67    Ppp1r3c    0 vs 48 0.0307954881   0.3913043
-## 68    Ppp1r3c    0 vs 96 0.0207542425   0.3043478
-## 69 Rpl31-ps15    0 vs 12 0.2103337975   4.0504244
-## 70 Rpl31-ps15    0 vs 24 0.2065968479   3.9198702
-## 71 Rpl31-ps15    0 vs 48 0.0256536259   7.0179730
-## 72 Rpl31-ps15    0 vs 96 0.0841990171   2.8497254
-## 73  Rps12-ps9    0 vs 12 0.1065254695   2.2765160
-## 74  Rps12-ps9    0 vs 24 0.1211482763   3.4921618
-## 75  Rps12-ps9    0 vs 48 0.0904999090   3.8768066
-## 76  Rps12-ps9    0 vs 96 0.2579107428   1.8455303
-## 77     Spink1    0 vs 12 0.4433674614   0.6739130
-## 78     Spink1    0 vs 24 0.0359898632   0.1521739
-## 79     Spink1    0 vs 48 0.0326469606   0.1086957
-## 80     Spink1    0 vs 96 0.7783676533   0.8695652
-## 81        Spn    0 vs 12 0.2559831740   0.8093385
-## 82        Spn    0 vs 24 0.0145267703   0.2354086
-## 83        Spn    0 vs 48 0.0121280652   0.1692607
-## 84        Spn    0 vs 96 0.0237346921   0.4494163
+
+``` r
+# knitr::kable(stat_results_all,
+#              digits = 3, # Control decimal places
+#              caption = "T-test results comparing each time point to 0 hours for significantly changed genes.")
 ```
 
 ## Heatmap Visualization
@@ -550,14 +488,7 @@ plot(network,
      edge.width = abs(E(network)$weight)*2,
      edge.color = ifelse(E(network)$weight > 0, "blue", "red"),
      main = "Gene Co-expression Network")
-```
 
-```
-## Warning: Non-positive edge weight found, ignoring all weights during graph
-## layout.
-```
-
-``` r
 legend("topright", legend = paste("Module", 1:max(V(network)$module)),
        col = rainbow(max(V(network)$module)), pch = 19, bty = "n")
 ```
@@ -707,7 +638,7 @@ print(spn_results)
 ### Inflammatory/Stress Response
 Genes: *Aoc3, Abcc2, Nlrp3, Kng1, Klf17, Spn*
 
-## InflammationHeatmap Visualization
+## Inflammation Heatmap Visualization
 
 ``` r
 # Define the genes to include
@@ -745,7 +676,6 @@ infl_unclustered_heatmap <- pheatmap(
 ``` r
 ggsave(filename = "figures/Infl_heatmap.png", plot = infl_unclustered_heatmap, width = 8, height = 10)
 ```
-![INFL_Heatmapo](figures/Infl_heatmap.png)
 
 ## Conclusions
 Our analyses reveal distinct biological modules triggered by doxycycline exposure:
